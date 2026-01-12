@@ -9,14 +9,14 @@ import serviceAcne from "@/assets/service-acne.jpg";
 import serviceAntiaging from "@/assets/service-antiaging.jpg";
 
 const allServices = [
-  { title: "4D Quadro Laser", image: serviceLaser },
-  { title: "2025 Laser", image: serviceFacial },
-  { title: "Facials and Peels", image: serviceDiamondPeel },
-  { title: "Aqua-Skin Medical Procedures", image: serviceWhitening },
-  { title: "Slimming and Firming", image: serviceSlimming },
-  { title: "Anti-Acne Treatments", image: serviceAcne },
-  { title: "Whitening Treatments", image: serviceWhitening },
-  { title: "Anti-Aging Treatments", image: serviceAntiaging },
+  { title: "Cafe by The Beach", image: serviceFacial },
+  { title: "Detox & Slimming", image: serviceSlimming },
+  { title: "Head Spa", image: serviceDiamondPeel },
+  { title: "Body Scrub", image: serviceWhitening },
+  { title: "Yoga", image: serviceLaser },
+  { title: "Massage", image: serviceAcne },
+  { title: "Wellness Drips", image: serviceAntiaging },
+  { title: "Facials", image: serviceFacial },
 ];
 
 const ServicesGrid = () => {
