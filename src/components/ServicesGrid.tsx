@@ -1,22 +1,15 @@
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
-import serviceLaser from "@/assets/service-laser.jpg";
-import serviceFacial from "@/assets/service-facial.jpg";
-import serviceSlimming from "@/assets/service-slimming.jpg";
-import serviceDiamondPeel from "@/assets/service-diamond-peel.jpg";
-import serviceWhitening from "@/assets/service-whitening.jpg";
-import serviceAcne from "@/assets/service-acne.jpg";
-import serviceAntiaging from "@/assets/service-antiaging.jpg";
 
 const allServices = [
-  { title: "Cafe by The Beach", image: serviceFacial },
-  { title: "Detox & Slimming", image: serviceSlimming },
-  { title: "Head Spa", image: serviceDiamondPeel },
-  { title: "Body Scrub", image: serviceWhitening },
-  { title: "Yoga", image: serviceLaser },
-  { title: "Massage", image: serviceAcne },
-  { title: "Wellness Drips", image: serviceAntiaging },
-  { title: "Facials", image: serviceFacial },
+  { title: "Cafe by The Beach", image: "https://i.imgur.com/vjcLpp8.jpeg" },
+  { title: "Detox & Slimming", image: "https://i.imgur.com/UKZXsAI.png" },
+  { title: "Head Spa", image: "https://i.imgur.com/laPHsD7.png" },
+  { title: "Body Scrub", image: "https://i.imgur.com/bxPNYWE.png" },
+  { title: "Yoga", image: "https://i.imgur.com/Up1lvBw.png" },
+  { title: "Massage", image: "https://i.imgur.com/GTWS6Gh.png" },
+  { title: "Wellness Drips", image: "https://i.imgur.com/FzFbPt9.png" },
+  { title: "Facials", image: "https://i.imgur.com/bXaHFzI.png" },
 ];
 
 const ServicesGrid = () => {
