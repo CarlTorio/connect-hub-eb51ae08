@@ -85,7 +85,7 @@ const ContactSection = () => {
               </h3>
               <div className="flex gap-4">
                 <a
-                  href="https://facebook.com/hilome"
+                  href="https://www.facebook.com/profile.php?id=61580172268741"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-12 h-12 gradient-accent rounded-full flex items-center justify-center hover:scale-110 transition-transform"
@@ -103,7 +103,7 @@ const ContactSection = () => {
               </div>
               <div className="mt-4 flex flex-wrap gap-3 text-sm">
                 <a
-                  href="https://facebook.com/hilome"
+                  href="https://www.facebook.com/profile.php?id=61580172268741"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-accent hover:text-accent/80 transition-colors"
@@ -139,7 +139,7 @@ const ContactSection = () => {
               <span className="sr-only">Open in Google Maps for directions</span>
             </a>
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3925.123456789!2d123.9369!3d10.3321!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x33a999258dce37c7%3A0x2c5c3c4c6e7f1234!2sMandaue%20City%2C%20Cebu!5e0!3m2!1sen!2sph!4v1234567890"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3925.1234567!2d123.9369!3d10.3321!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x33a999258dce37c7%3A0x1234567890abcdef!2s6014%20Mandaue%20City%2C%20Cebu%2C%20Philippines!5e0!3m2!1sen!2sph!4v1234567890!5m2!1sen!2sph&markers=color:red%7C10.3321,123.9369"
               width="100%"
               height="100%"
               style={{ border: 0, pointerEvents: 'none' }}
