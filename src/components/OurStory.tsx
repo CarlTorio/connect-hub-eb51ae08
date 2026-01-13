@@ -97,10 +97,10 @@ const OurStory = () => {
             </h2>
             <div className="space-y-2 md:space-y-3 text-muted-foreground text-xs md:text-sm lg:text-base leading-relaxed">
               <p>
-                SkinStation combines laser and science to give you the best results in skin and body services.
+                Nestled in Maslog, Danao City, Cebu, Hilomè Wellness Resort is a sanctuary where healing begins in silence.
               </p>
               <p>
-                Our trained experts bring innovative solutions including dermatology, laser treatments, anti-aging, and slimming at affordable prices.
+                Founded by Dr. Herbert Ryan Cruz of Cruzskin Medical and Aesthetic Center, Hilomè draws its name from the Filipino word "Hilom" (healing) and "È" (Elegance)—embodying wellness delivered with grace and sophistication, rooted in Filipino heritage.
               </p>
             </div>
             <motion.div 
