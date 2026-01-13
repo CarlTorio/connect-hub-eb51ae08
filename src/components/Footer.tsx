@@ -8,9 +8,9 @@ const Footer = () => {
     Contacts: {
       type: "contact",
       items: [
-        { icon: Phone, text: "+63 912 345 6789", href: "tel:+639123456789" },
-        { icon: Mail, text: "info@hilome.com", href: "mailto:info@hilome.com" },
-        { icon: MapPin, text: "Makati City, Philippines", href: "#" },
+        { icon: Phone, text: "0977 334 4200", href: "tel:09773344200" },
+        { icon: Mail, text: "cruzskin@gmail.com", href: "mailto:cruzskin@gmail.com" },
+        { icon: MapPin, text: "6014 Mandaue City, Philippines", href: "#" },
       ]
     },
     Services: {
