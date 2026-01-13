@@ -39,7 +39,7 @@ const FeaturedServices = () => {
           <motion.a href="#services" className="flex items-center gap-2 text-accent hover:text-accent/80 font-medium transition-colors group text-xs md:text-sm" whileHover={{
           x: 5
         }}>
-            See all
+            See all services
             <ArrowRight className="w-3 h-3 md:w-4 md:h-4 group-hover:translate-x-1 transition-transform" />
           </motion.a>
         </motion.div>
