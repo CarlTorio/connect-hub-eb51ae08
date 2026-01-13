@@ -1,6 +1,7 @@
 import { motion, useInView } from "framer-motion";
-import { useRef, useEffect, useCallback } from "react";
+import { useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import {
   Carousel,
   CarouselContent,
@@ -107,12 +108,14 @@ const OurStory = () => {
               className="mt-6"
               whileHover={{ scale: 1.02 }}
             >
-              <Button
-                size="default"
-                className="gradient-accent text-accent-foreground hover:opacity-90 rounded-full px-6 text-sm"
-              >
-                Read More
-              </Button>
+              <Link to="/our-story">
+                <Button
+                  size="default"
+                  className="gradient-accent text-accent-foreground hover:opacity-90 rounded-full px-6 text-sm"
+                >
+                  Read More
+                </Button>
+              </Link>
             </motion.div>
           </motion.div>
         </div>
