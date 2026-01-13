@@ -23,7 +23,7 @@ const OurStory = () => {
       <div className="absolute inset-0 bg-black/50" />
 
       {/* Content container that scrolls over the fixed background */}
-      <div className="relative z-10 min-h-[400px] md:min-h-[450px] lg:min-h-[500px] flex items-center justify-center md:justify-end px-4 md:px-8 lg:px-20 py-12">
+      <div className="relative z-10 min-h-[400px] md:min-h-[450px] lg:min-h-[500px] flex items-center justify-center md:justify-start px-4 md:px-8 lg:px-20 py-12">
         <motion.div
           initial={{ opacity: 0, x: 60 }}
           animate={isInView ? { opacity: 1, x: 0 } : {}}
