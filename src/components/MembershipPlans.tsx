@@ -8,6 +8,7 @@ const membershipTiers = [
     tier: "Basic Tier",
     image: "https://i.imgur.com/rB3DdLk.png",
     glowColor: "rgba(34, 197, 94, 0.4)",
+    gradientBg: "linear-gradient(to bottom, rgba(255,255,255,1) 0%, rgba(34, 197, 94, 0.15) 100%)",
     benefits: [
       "10% discount on all spa and wellness services",
       "5% discount on Aesthetic Services",
@@ -25,6 +26,7 @@ const membershipTiers = [
     tier: "Premium Tier",
     image: "https://i.imgur.com/nkrUlEC.png",
     glowColor: "rgba(234, 179, 8, 0.5)",
+    gradientBg: "linear-gradient(to bottom, rgba(255,255,255,1) 0%, rgba(234, 179, 8, 0.15) 100%)",
     featured: true,
     benefits: [
       "FREE (2) Vanity Fit Drip (Anti-aging and Slimming)",
@@ -44,6 +46,7 @@ const membershipTiers = [
     tier: "Elite Tier",
     image: "https://i.imgur.com/MFJWBLn.png",
     glowColor: "rgba(148, 163, 184, 0.5)",
+    gradientBg: "linear-gradient(to bottom, rgba(255,255,255,1) 0%, rgba(148, 163, 184, 0.2) 100%)",
     benefits: [
       "20% discount on spa, aesthetic, food and beverages",
       "FREE 1 Skin or Medical Consultation",
@@ -240,7 +243,10 @@ const MembershipPlans = () => {
               </div>
 
               {/* Tier Info */}
-              <div className="p-3 md:p-4 relative bg-card">
+              <div 
+                className="p-3 md:p-4 relative rounded-b-xl"
+                style={{ background: tier.gradientBg }}
+              >
                 <motion.div 
                   initial={{ opacity: 0 }}
                   animate={isInView ? { opacity: 1 } : {}}
