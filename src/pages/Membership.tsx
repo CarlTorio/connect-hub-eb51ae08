@@ -146,7 +146,7 @@ const Membership = () => {
                 <Check className="w-10 h-10 text-accent" />
               </motion.div>
               
-              <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-semibold text-foreground mb-4">
+              <h1 className="font-display text-2xl md:text-3xl font-semibold text-foreground mb-4">
                 Welcome to the Hilomè Family
               </h1>
               
