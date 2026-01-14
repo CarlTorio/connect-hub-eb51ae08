@@ -257,16 +257,18 @@ const BookConsultation = () => {
                       name="date"
                       value={formData.date}
                       onChange={handleChange}
+                      onClick={(e) => (e.target as HTMLInputElement).showPicker()}
                       placeholder="Date"
-                      className="w-full bg-transparent border-b-2 border-primary-foreground/50 text-primary-foreground py-2 px-0 focus:outline-none focus:border-accent transition-colors text-sm"
+                      className="w-full bg-transparent border-b-2 border-primary-foreground/50 text-primary-foreground py-2 px-0 focus:outline-none focus:border-accent transition-colors text-sm cursor-pointer"
                     />
                     <input
                       type="time"
                       name="time"
                       value={formData.time}
                       onChange={handleChange}
+                      onClick={(e) => (e.target as HTMLInputElement).showPicker()}
                       placeholder="Time"
-                      className="w-full bg-transparent border-b-2 border-primary-foreground/50 text-primary-foreground py-2 px-0 focus:outline-none focus:border-accent transition-colors text-sm"
+                      className="w-full bg-transparent border-b-2 border-primary-foreground/50 text-primary-foreground py-2 px-0 focus:outline-none focus:border-accent transition-colors text-sm cursor-pointer"
                     />
                   </div>
                 </div>
