@@ -42,7 +42,7 @@ const FloatingBookButton = () => {
               className="gradient-accent text-accent-foreground shadow-elevated rounded-full px-6 py-6 flex items-center gap-2"
             >
               <Calendar className="w-5 h-5" />
-              <span className="hidden sm:inline">Book Now</span>
+              <span className="hidden sm:inline">Book Consultation</span>
             </Button>
           </motion.div>
         </motion.div>

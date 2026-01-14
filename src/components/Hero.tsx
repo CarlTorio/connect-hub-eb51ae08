@@ -60,7 +60,7 @@ const Hero = () => {
           delay: 0.7
         }} className="flex flex-wrap gap-3">
             <Button size="default" className="gradient-accent text-accent-foreground hover:opacity-90 transition-all duration-300 hover:scale-105 px-4 md:px-6 py-2 md:py-3 text-sm md:text-base rounded-full">
-              Book Now
+              Book Consultation
             </Button>
             <Button size="default" variant="outline" className="border-foreground/30 text-foreground hover:bg-foreground/5 px-4 md:px-6 py-2 md:py-3 text-sm md:text-base rounded-full">
               Join Now
