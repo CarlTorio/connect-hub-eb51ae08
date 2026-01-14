@@ -17,7 +17,7 @@ const ServicesGrid = () => {
   const isInView = useInView(ref, { once: true, amount: 0.2 });
 
   return (
-    <section id="services" className="py-10 md:py-14 bg-cream" ref={ref}>
+    <section id="services" className="py-10 md:py-14 bg-cream scroll-mt-24" ref={ref}>
       <div className="container mx-auto px-4">
         {/* Header */}
         <motion.div
