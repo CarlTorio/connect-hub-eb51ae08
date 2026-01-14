@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, CheckCircle, Phone, Mail, MapPin, Clock, Facebook, Instagram, Calendar } from "lucide-react";
+import { ArrowLeft, CheckCircle, Phone, Mail, MapPin, Clock, Facebook, Instagram, Calendar, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -21,6 +21,7 @@ const BookConsultation = () => {
   });
   const [submitted, setSubmitted] = useState(false);
   const [isDateTimePickerOpen, setIsDateTimePickerOpen] = useState(false);
+  const [isMembershipOpen, setIsMembershipOpen] = useState(false);
 
   const handleDateTimeConfirm = (date: string, time: string) => {
     setFormData((prev) => ({
@@ -31,10 +32,10 @@ const BookConsultation = () => {
   };
 
   const memberships = [
-    "Non-member",
-    "Green Member",
-    "Gold Member",
-    "Platinum Member",
+    { name: "Non-member", color: "bg-gray-500", textColor: "text-white", borderColor: "border-gray-500" },
+    { name: "Green Member", color: "bg-gradient-to-br from-green-600 to-green-800", textColor: "text-white", borderColor: "border-green-600" },
+    { name: "Gold Member", color: "bg-gradient-to-br from-yellow-500 to-amber-600", textColor: "text-white", borderColor: "border-yellow-500" },
+    { name: "Platinum Member", color: "bg-gradient-to-br from-gray-400 to-gray-600", textColor: "text-white", borderColor: "border-gray-400" },
   ];
 
   const handleChange = (
@@ -230,31 +231,51 @@ const BookConsultation = () => {
                 </div>
 
                 {/* Membership */}
-                <div>
+                <div className="relative">
                   <label className="block text-primary-foreground font-semibold text-sm mb-1">
                     Membership <span className="text-red-300">*</span>
                   </label>
-                  <select
-                    name="preferredBranch"
-                    value={formData.preferredBranch}
-                    onChange={handleChange}
-                    className="w-full bg-transparent border-b-2 border-primary-foreground/50 text-primary-foreground py-2 px-0 focus:outline-none focus:border-accent transition-colors cursor-pointer text-sm"
-                    style={{
-                      color: formData.preferredBranch
-                        ? "hsl(var(--primary-foreground))"
-                        : "hsl(var(--primary-foreground) / 0.5)",
-                    }}
+                  <button
+                    type="button"
+                    onClick={() => setIsMembershipOpen(!isMembershipOpen)}
+                    className="w-full bg-transparent border-b-2 border-primary-foreground/50 text-primary-foreground py-2 px-0 focus:outline-none focus:border-accent transition-colors cursor-pointer text-sm text-left flex items-center justify-between"
                   >
-                    {memberships.map((membership, index) => (
-                      <option
-                        key={index}
-                        value={membership}
-                        className="bg-primary text-primary-foreground"
-                      >
-                        {membership}
-                      </option>
-                    ))}
-                  </select>
+                    {formData.preferredBranch ? (
+                      <span className="flex items-center gap-2">
+                        <span className={`w-3 h-3 rounded-full ${memberships.find(m => m.name === formData.preferredBranch)?.color || ''}`}></span>
+                        {formData.preferredBranch}
+                      </span>
+                    ) : (
+                      <span className="text-primary-foreground/50">Select membership</span>
+                    )}
+                    <ChevronDown className={`w-4 h-4 transition-transform ${isMembershipOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  
+                  {/* Dropdown */}
+                  {isMembershipOpen && (
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-background rounded-lg shadow-lg border border-border z-50 overflow-hidden">
+                      {memberships.map((membership, index) => (
+                        <button
+                          key={index}
+                          type="button"
+                          onClick={() => {
+                            setFormData(prev => ({ ...prev, preferredBranch: membership.name }));
+                            setIsMembershipOpen(false);
+                          }}
+                          className={`w-full px-4 py-3 text-left text-sm hover:bg-muted transition-colors flex items-center gap-3 ${
+                            formData.preferredBranch === membership.name ? 'bg-muted' : ''
+                          }`}
+                        >
+                          <span className={`w-8 h-5 rounded ${membership.color} flex items-center justify-center`}>
+                            <span className={`text-[10px] font-bold ${membership.textColor}`}>
+                              {membership.name === "Non-member" ? "—" : membership.name.split(" ")[0].charAt(0)}
+                            </span>
+                          </span>
+                          <span className="text-foreground font-medium">{membership.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Preferred Schedule */}
