@@ -73,7 +73,7 @@ const BookConsultation = () => {
           <motion.button
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            onClick={() => navigate(-1)}
+            onClick={() => navigate("/")}
             className="flex items-center gap-2 text-foreground/70 hover:text-foreground transition-colors mb-6"
           >
             <ArrowLeft className="w-5 h-5" />

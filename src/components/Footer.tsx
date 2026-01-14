@@ -1,8 +1,10 @@
 import { motion } from "framer-motion";
 import { Facebook, Instagram, Youtube, Twitter, Phone, Mail, MapPin } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const Footer = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const footerSections = {
     Contacts: {
@@ -16,18 +18,18 @@ const Footer = () => {
     Services: {
       type: "links",
       items: [
-        { text: "Facials", href: "#services" },
-        { text: "Massage", href: "#services" },
-        { text: "Detox & Slimming", href: "#services" },
-        { text: "see all", href: "#services", isHighlight: true },
+        { text: "Facials", path: "/#services" },
+        { text: "Massage", path: "/#services" },
+        { text: "Detox & Slimming", path: "/#services" },
+        { text: "see all", path: "/#services", isHighlight: true },
       ]
     },
     Help: {
       type: "mixed",
       items: [
-        { text: "Our Story", href: "/our-story", isRoute: true },
-        { text: "Data Privacy", href: "#" },
-        { text: "FAQs", href: "#" },
+        { text: "Our Story", path: "/our-story" },
+        { text: "Data Privacy", path: "#" },
+        { text: "FAQs", path: "#" },
       ]
     },
   };
@@ -38,6 +40,29 @@ const Footer = () => {
     { icon: Youtube, href: "#" },
     { icon: Twitter, href: "#" },
   ];
+
+  const handleNavClick = (path: string) => {
+    if (path.startsWith("/#")) {
+      const sectionId = path.substring(2);
+      
+      if (location.pathname === "/") {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth" });
+        }
+      } else {
+        navigate("/");
+        setTimeout(() => {
+          const element = document.getElementById(sectionId);
+          if (element) {
+            element.scrollIntoView({ behavior: "smooth" });
+          }
+        }, 100);
+      }
+    } else if (path.startsWith("/")) {
+      navigate(path);
+    }
+  };
 
   return (
     <footer className="bg-green-deep text-accent-foreground relative z-50 isolation-isolate before:absolute before:inset-0 before:bg-green-deep before:-z-10">
@@ -51,13 +76,16 @@ const Footer = () => {
               transition={{ duration: 0.5 }}
               viewport={{ once: true }}
             >
-              <div className="mb-2 md:mb-3">
+              <button 
+                onClick={() => navigate("/")}
+                className="mb-2 md:mb-3 block"
+              >
                 <img 
                   src="https://i.imgur.com/9beP2dq.png" 
                   alt="SkinStation Logo" 
                   className="h-5 md:h-6 w-auto brightness-0 invert"
                 />
-              </div>
+              </button>
               <p className="text-accent-foreground/70 text-[10px] md:text-xs leading-relaxed">
                 Your trusted partner in achieving radiant, healthy skin.
               </p>
@@ -78,9 +106,9 @@ const Footer = () => {
                 {section.type === "contact" ? (
                   section.items.map((item) => (
                     <li key={item.text} className="flex items-center gap-2">
-                      <item.icon className="w-3 h-3 text-accent-foreground/70" />
+                      {'icon' in item && <item.icon className="w-3 h-3 text-accent-foreground/70" />}
                       <a
-                        href={item.href}
+                        href={'href' in item ? item.href : '#'}
                         className="text-accent-foreground/70 hover:text-accent-foreground transition-colors text-[10px] md:text-xs"
                       >
                         {item.text}
@@ -90,27 +118,20 @@ const Footer = () => {
                 ) : (
                   section.items.map((item) => (
                     <li key={item.text}>
-                      {item.isHighlight ? (
-                        <a
-                          href={item.href}
+                      {'isHighlight' in item && item.isHighlight ? (
+                        <button
+                          onClick={() => handleNavClick('path' in item ? item.path : '#')}
                           className="text-accent-foreground/90 hover:text-accent-foreground transition-colors text-[10px] md:text-xs font-medium underline underline-offset-2"
                         >
                           {item.text}
-                        </a>
-                      ) : item.isRoute ? (
-                        <Link
-                          to={item.href}
-                          className="text-accent-foreground/70 hover:text-accent-foreground transition-colors text-[10px] md:text-xs"
-                        >
-                          {item.text}
-                        </Link>
+                        </button>
                       ) : (
-                        <a
-                          href={item.href}
+                        <button
+                          onClick={() => handleNavClick('path' in item ? item.path : '#')}
                           className="text-accent-foreground/70 hover:text-accent-foreground transition-colors text-[10px] md:text-xs"
                         >
                           {item.text}
-                        </a>
+                        </button>
                       )}
                     </li>
                   ))
