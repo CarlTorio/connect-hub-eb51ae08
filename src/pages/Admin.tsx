@@ -511,20 +511,22 @@ const HilomeAdminDashboard = () => {
       {/* Navigation Tabs */}
       <nav className="bg-card border-b border-border">
         <div className="container mx-auto px-4">
-          <div className="flex gap-8 overflow-x-auto">
-            {tabs.map(tab => (
+          <div className="grid grid-cols-4">
+            {tabs.map((tab, index) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`py-4 border-b-2 transition-all whitespace-nowrap relative ${
+                className={`py-4 border-b-2 transition-all whitespace-nowrap relative text-center ${
+                  index < tabs.length - 1 ? 'border-r border-border' : ''
+                } ${
                   activeTab === tab.id
-                    ? 'border-accent text-accent font-medium'
-                    : 'border-transparent text-muted-foreground hover:text-foreground'
+                    ? 'border-b-accent text-accent font-medium'
+                    : 'border-b-transparent text-muted-foreground hover:text-foreground'
                 }`}
               >
                 {tab.label}
                 {tab.badge && tab.badge > 0 && (
-                  <span className="absolute -top-1 -right-3 h-5 w-5 rounded-full bg-destructive text-white text-xs flex items-center justify-center">
+                  <span className="absolute top-2 ml-1 h-5 w-5 rounded-full bg-destructive text-white text-xs flex items-center justify-center inline-flex">
                     {tab.badge}
                   </span>
                 )}
