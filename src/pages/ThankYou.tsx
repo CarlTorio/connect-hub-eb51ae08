@@ -134,15 +134,24 @@ const ThankYou = () => {
             animate={{ opacity: 1, y: 0 }}
             className="max-w-lg mx-auto"
           >
-            {/* Success Message */}
+            {/* Thank You Message */}
             <div className="text-center mb-8">
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 200, delay: 0.2 }}
+                className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4"
+              >
+                <CheckCircle className="w-10 h-10 text-primary" />
+              </motion.div>
+              
               <motion.h1
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
                 className="font-display text-3xl md:text-4xl text-foreground mb-2"
               >
-                Your Booking Receipt
+                Thank You!
               </motion.h1>
               
               <motion.p
@@ -151,7 +160,7 @@ const ThankYou = () => {
                 transition={{ delay: 0.4 }}
                 className="text-foreground/70"
               >
-                Show this receipt to our staff when you arrive
+                Your booking has been confirmed. Please arrive 10 minutes before your scheduled appointment.
               </motion.p>
             </div>
 
