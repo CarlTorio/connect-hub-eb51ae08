@@ -19,13 +19,11 @@ const HilomeAdminDashboard = () => {
   const [selectedMember, setSelectedMember] = useState<any>(null);
   const [showBookingHistory, setShowBookingHistory] = useState(false);
 
-  const [dashboardData, setDashboardData] = useState({
-    totalSales: 1250000,
-    totalMembers: 147,
-    pendingApplications: 12,
-    activeBookings: 28,
-    monthlyGrowth: 15.3
-  });
+  const membershipPrices: Record<string, number> = {
+    Green: 8888,
+    Gold: 19888,
+    Platinum: 38888
+  };
 
   const [bookings, setBookings] = useState([
     { id: 1, name: 'Maria Santos', email: 'maria@email.com', phone: '0917-123-4567', date: '2026-01-20', time: '10:00 AM', membership: 'Gold', status: 'confirmed' },
@@ -45,20 +43,28 @@ const HilomeAdminDashboard = () => {
     { id: 4, name: 'Ricardo Lopez', email: 'ricardo@email.com', phone: '0925-901-2345', membership: 'Gold', joinDate: '2025-12-01', lastPayment: '2025-12-01', expirationDate: '2026-01-25', daysRemaining: 11, totalPaid: 19888, status: 'expiring' },
   ]);
 
-  const monthlySales = [
-    { month: 'Jul', revenue: 95000 },
-    { month: 'Aug', revenue: 120000 },
-    { month: 'Sep', revenue: 135000 },
-    { month: 'Oct', revenue: 142000 },
-    { month: 'Nov', revenue: 158000 },
-    { month: 'Dec', revenue: 180000 },
-    { month: 'Jan', revenue: 210000 },
+  // Compute dashboard data dynamically
+  const totalSales = members.reduce((sum, member) => sum + (member.totalPaid || membershipPrices[member.membership] || 0), 0);
+  const totalMembers = members.length;
+  const pendingApplications = applications.filter(app => app.status === 'pending').length;
+  const activeBookings = bookings.length;
+
+  // Compute membership distribution dynamically
+  const membershipDistribution = [
+    { name: 'Green', value: members.filter(m => m.membership === 'Green').length, color: 'hsl(var(--green-600))' },
+    { name: 'Gold', value: members.filter(m => m.membership === 'Gold').length, color: 'hsl(var(--accent))' },
+    { name: 'Platinum', value: members.filter(m => m.membership === 'Platinum').length, color: 'hsl(var(--muted-foreground))' },
   ];
 
-  const membershipDistribution = [
-    { name: 'Green', value: 45, color: 'hsl(var(--green-600))' },
-    { name: 'Gold', value: 67, color: 'hsl(var(--accent))' },
-    { name: 'Platinum', value: 35, color: 'hsl(var(--muted-foreground))' },
+  // Revenue trend based on total sales (simulated monthly distribution)
+  const monthlySales = [
+    { month: 'Jul', revenue: Math.round(totalSales * 0.10) },
+    { month: 'Aug', revenue: Math.round(totalSales * 0.12) },
+    { month: 'Sep', revenue: Math.round(totalSales * 0.14) },
+    { month: 'Oct', revenue: Math.round(totalSales * 0.15) },
+    { month: 'Nov', revenue: Math.round(totalSales * 0.17) },
+    { month: 'Dec', revenue: Math.round(totalSales * 0.15) },
+    { month: 'Jan', revenue: Math.round(totalSales * 0.17) },
   ];
 
   const handleApproveApplication = (id: number) => {
@@ -82,22 +88,12 @@ const HilomeAdminDashboard = () => {
     };
     
     setMembers([...members, newMember]);
-    setDashboardData({
-      ...dashboardData,
-      totalMembers: dashboardData.totalMembers + 1,
-      pendingApplications: dashboardData.pendingApplications - 1,
-      totalSales: dashboardData.totalSales + app.amount
-    });
   };
 
   const handleRejectApplication = (id: number) => {
     setApplications(applications.map(a => 
       a.id === id ? { ...a, status: 'rejected' } : a
     ));
-    setDashboardData({
-      ...dashboardData,
-      pendingApplications: dashboardData.pendingApplications - 1
-    });
   };
 
   const getMembershipColor = (membership: string) => {
@@ -151,10 +147,10 @@ const HilomeAdminDashboard = () => {
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard icon={DollarSign} title="Total Sales" value={`₱${dashboardData.totalSales.toLocaleString()}`} subtitle="+15.3% from last month" gradient="gradient-accent" />
-        <StatCard icon={Users} title="Total Members" value={dashboardData.totalMembers} subtitle="Active memberships" gradient="bg-green-600" />
-        <StatCard icon={Clock} title="Pending Applications" value={dashboardData.pendingApplications} subtitle="Awaiting review" gradient="bg-amber-500" />
-        <StatCard icon={Calendar} title="Active Bookings" value={dashboardData.activeBookings} subtitle="This week" gradient="bg-sage-600" />
+        <StatCard icon={DollarSign} title="Total Sales" value={`₱${totalSales.toLocaleString()}`} subtitle="Based on membership payments" gradient="gradient-accent" />
+        <StatCard icon={Users} title="Total Members" value={totalMembers} subtitle="Active memberships" gradient="bg-green-600" />
+        <StatCard icon={Clock} title="Pending Applications" value={pendingApplications} subtitle="Awaiting review" gradient="bg-amber-500" />
+        <StatCard icon={Calendar} title="Active Bookings" value={activeBookings} subtitle="This week" gradient="bg-sage-600" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -521,7 +517,7 @@ const HilomeAdminDashboard = () => {
   const tabs = [
     { id: 'dashboard', label: 'Dashboard' },
     { id: 'bookings', label: 'Bookings' },
-    { id: 'applications', label: 'Applications', badge: dashboardData.pendingApplications },
+    { id: 'applications', label: 'Applications', badge: pendingApplications },
     { id: 'members', label: 'Members' },
   ];
 
