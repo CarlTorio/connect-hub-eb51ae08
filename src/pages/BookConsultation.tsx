@@ -7,6 +7,9 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import DateTimePicker from "@/components/DateTimePicker";
 import { format } from "date-fns";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+
 const BookConsultation = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -38,24 +41,47 @@ const BookConsultation = () => {
       [name]: value
     }));
   };
-  const handleSubmit = () => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
     if (formData.name && formData.email && formData.contactNumber && formData.preferredBranch && formData.date && formData.time) {
-      console.log("Form submitted:", formData);
-      setSubmitted(true);
-      setTimeout(() => {
-        setSubmitted(false);
-        setFormData({
-          name: "",
-          email: "",
-          contactNumber: "",
-          preferredBranch: "",
-          date: "",
-          time: "",
-          message: ""
+      setIsSubmitting(true);
+      try {
+        const { error } = await supabase.from('bookings').insert({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.contactNumber,
+          membership: formData.preferredBranch,
+          date: formData.date,
+          time: formData.time,
+          message: formData.message || null,
+          status: 'pending'
         });
-      }, 3000);
+
+        if (error) throw error;
+
+        setSubmitted(true);
+        toast.success("Consultation booked successfully!");
+        setTimeout(() => {
+          setSubmitted(false);
+          setFormData({
+            name: "",
+            email: "",
+            contactNumber: "",
+            preferredBranch: "",
+            date: "",
+            time: "",
+            message: ""
+          });
+        }, 3000);
+      } catch (error) {
+        console.error('Error booking consultation:', error);
+        toast.error("Failed to book consultation. Please try again.");
+      } finally {
+        setIsSubmitting(false);
+      }
     } else {
-      alert("Please fill in all required fields");
+      toast.error("Please fill in all required fields");
     }
   };
   return <div className="min-h-screen bg-background">
@@ -225,11 +251,11 @@ const BookConsultation = () => {
               }} whileTap={{
                 scale: 0.98
               }} className="pt-2">
-                  <Button onClick={handleSubmit} className="w-full bg-accent text-accent-foreground font-bold py-4 rounded-full hover:bg-accent/90 transition-colors" size="lg">
+                  <Button onClick={handleSubmit} disabled={isSubmitting} className="w-full bg-accent text-accent-foreground font-bold py-4 rounded-full hover:bg-accent/90 transition-colors disabled:opacity-50" size="lg">
                     {submitted ? <span className="flex items-center gap-2">
                         <CheckCircle className="w-5 h-5" />
                         Consultation Booked!
-                      </span> : "Book your consultation now!"}
+                      </span> : isSubmitting ? "Booking..." : "Book your consultation now!"}
                   </Button>
                 </motion.div>
               </div>

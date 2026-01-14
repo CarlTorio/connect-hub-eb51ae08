@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Calendar, Users, DollarSign, TrendingUp, Clock, CheckCircle, XCircle, Search, Download, Eye, ArrowLeft, History, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import BookingHistory from '@/components/BookingHistory';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const HilomeAdminDashboard = () => {
   const navigate = useNavigate();
@@ -21,39 +23,93 @@ const HilomeAdminDashboard = () => {
 
   const membershipPrices: Record<string, number> = {
     Green: 8888,
+    GREEN: 8888,
     Gold: 19888,
-    Platinum: 38888
+    GOLD: 18888,
+    Platinum: 38888,
+    PLATINUM: 38888
   };
 
-  const [bookings, setBookings] = useState([
-    { id: 1, name: 'Maria Santos', email: 'maria@email.com', phone: '0917-123-4567', date: '2026-01-20', time: '10:00 AM', membership: 'Gold', status: 'confirmed' },
-    { id: 2, name: 'Juan Dela Cruz', email: 'juan@email.com', phone: '0918-234-5678', date: '2026-01-21', time: '2:00 PM', membership: 'Platinum', status: 'pending' },
-    { id: 3, name: 'Ana Reyes', email: 'ana@email.com', phone: '0919-345-6789', date: '2026-01-22', time: '11:00 AM', membership: 'Green', status: 'confirmed' },
-  ]);
+  interface Booking {
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    date: string;
+    time: string;
+    membership: string;
+    status: string;
+  }
 
-  const [applications, setApplications] = useState([
-    { id: 1, name: 'Carlos Rivera', email: 'carlos@email.com', phone: '0920-456-7890', membership: 'Gold', amount: 19888, status: 'pending', appliedDate: '2026-01-10' },
-    { id: 2, name: 'Sofia Gonzales', email: 'sofia@email.com', phone: '0921-567-8901', membership: 'Platinum', amount: 38888, status: 'pending', appliedDate: '2026-01-12' },
-  ]);
+  interface Application {
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    membership: string;
+    amount: number;
+    status: string;
+    applied_date: string;
+  }
 
-  const [members, setMembers] = useState([
-    { id: 1, name: 'Isabella Torres', email: 'isabella@email.com', phone: '0922-678-9012', membership: 'Gold', joinDate: '2025-07-15', lastPayment: '2025-07-15', expirationDate: '2026-07-15', daysRemaining: 182, totalPaid: 19888, status: 'active' },
-    { id: 2, name: 'Miguel Castro', email: 'miguel@email.com', phone: '0923-789-0123', membership: 'Platinum', joinDate: '2025-09-01', lastPayment: '2025-09-01', expirationDate: '2026-09-01', daysRemaining: 230, totalPaid: 38888, status: 'active' },
-    { id: 3, name: 'Gabriela Mendoza', email: 'gab@email.com', phone: '0924-890-1234', membership: 'Green', joinDate: '2025-10-20', lastPayment: '2025-10-20', expirationDate: '2026-10-20', daysRemaining: 279, totalPaid: 8888, status: 'active' },
-    { id: 4, name: 'Ricardo Lopez', email: 'ricardo@email.com', phone: '0925-901-2345', membership: 'Gold', joinDate: '2025-12-01', lastPayment: '2025-12-01', expirationDate: '2026-01-25', daysRemaining: 11, totalPaid: 19888, status: 'expiring' },
-  ]);
+  interface Member {
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    membership: string;
+    join_date: string;
+    last_payment: string;
+    expiration_date: string;
+    total_paid: number;
+    status: string;
+  }
+
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [applications, setApplications] = useState<Application[]>([]);
+  const [members, setMembers] = useState<Member[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch data from database
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      const [bookingsRes, applicationsRes, membersRes] = await Promise.all([
+        supabase.from('bookings').select('*').order('created_at', { ascending: false }),
+        supabase.from('membership_applications').select('*').order('created_at', { ascending: false }),
+        supabase.from('members').select('*').order('created_at', { ascending: false })
+      ]);
+
+      if (bookingsRes.error) throw bookingsRes.error;
+      if (applicationsRes.error) throw applicationsRes.error;
+      if (membersRes.error) throw membersRes.error;
+
+      setBookings(bookingsRes.data || []);
+      setApplications(applicationsRes.data || []);
+      setMembers(membersRes.data || []);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      toast.error('Failed to load data');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   // Compute dashboard data dynamically
-  const totalSales = members.reduce((sum, member) => sum + (member.totalPaid || membershipPrices[member.membership] || 0), 0);
+  const totalSales = members.reduce((sum, member) => sum + (member.total_paid || membershipPrices[member.membership] || 0), 0);
   const totalMembers = members.length;
   const pendingApplications = applications.filter(app => app.status === 'pending').length;
   const activeBookings = bookings.length;
 
   // Compute membership distribution dynamically
   const membershipDistribution = [
-    { name: 'Green', value: members.filter(m => m.membership === 'Green').length, color: 'hsl(var(--green-600))' },
-    { name: 'Gold', value: members.filter(m => m.membership === 'Gold').length, color: 'hsl(var(--accent))' },
-    { name: 'Platinum', value: members.filter(m => m.membership === 'Platinum').length, color: 'hsl(var(--muted-foreground))' },
+    { name: 'Green', value: members.filter(m => m.membership.toUpperCase().includes('GREEN')).length, color: 'hsl(var(--green-600))' },
+    { name: 'Gold', value: members.filter(m => m.membership.toUpperCase().includes('GOLD')).length, color: 'hsl(var(--accent))' },
+    { name: 'Platinum', value: members.filter(m => m.membership.toUpperCase().includes('PLATINUM')).length, color: 'hsl(var(--muted-foreground))' },
   ];
 
   // Revenue trend showing membership revenue per month
@@ -67,33 +123,55 @@ const HilomeAdminDashboard = () => {
     { month: 'Jan', revenue: totalSales },
   ];
 
-  const handleApproveApplication = (id: number) => {
+  const handleApproveApplication = async (id: string) => {
     const app = applications.find(a => a.id === id);
     if (!app) return;
-    
-    setApplications(applications.filter(a => a.id !== id));
-    
-    const newMember = {
-      id: members.length + 1,
-      name: app.name,
-      email: app.email,
-      phone: app.phone,
-      membership: app.membership,
-      joinDate: new Date().toISOString().split('T')[0],
-      lastPayment: new Date().toISOString().split('T')[0],
-      expirationDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0],
-      daysRemaining: 365,
-      totalPaid: app.amount,
-      status: 'active'
-    };
-    
-    setMembers([...members, newMember]);
+
+    try {
+      // Create new member
+      const expirationDate = new Date();
+      expirationDate.setFullYear(expirationDate.getFullYear() + 1);
+
+      const { error: memberError } = await supabase.from('members').insert({
+        name: app.name,
+        email: app.email,
+        phone: app.phone,
+        membership: app.membership,
+        join_date: new Date().toISOString().split('T')[0],
+        last_payment: new Date().toISOString().split('T')[0],
+        expiration_date: expirationDate.toISOString().split('T')[0],
+        total_paid: app.amount,
+        status: 'active'
+      });
+
+      if (memberError) throw memberError;
+
+      // Delete the application
+      const { error: deleteError } = await supabase.from('membership_applications').delete().eq('id', id);
+      if (deleteError) throw deleteError;
+
+      toast.success('Application approved!');
+      fetchData(); // Refresh data
+    } catch (error) {
+      console.error('Error approving application:', error);
+      toast.error('Failed to approve application');
+    }
   };
 
-  const handleRejectApplication = (id: number) => {
-    setApplications(applications.map(a => 
-      a.id === id ? { ...a, status: 'rejected' } : a
-    ));
+  const handleRejectApplication = async (id: string) => {
+    try {
+      const { error } = await supabase.from('membership_applications')
+        .update({ status: 'rejected' })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast.success('Application cancelled');
+      fetchData(); // Refresh data
+    } catch (error) {
+      console.error('Error rejecting application:', error);
+      toast.error('Failed to cancel application');
+    }
   };
 
   const getMembershipColor = (membership: string) => {
@@ -334,7 +412,7 @@ const HilomeAdminDashboard = () => {
                     <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                       <span>Email: {app.email}</span>
                       <span>Phone: {app.phone}</span>
-                      <span>Applied: {app.appliedDate}</span>
+                      <span>Applied: {app.applied_date}</span>
                     </div>
                     <Badge variant="outline" className={getMembershipColor(app.membership)}>
                       {app.membership} - ₱{app.amount.toLocaleString()}
@@ -435,12 +513,19 @@ const HilomeAdminDashboard = () => {
                         {member.membership}
                       </Badge>
                     </td>
-                    <td className="py-4 px-2 text-sm">{member.joinDate}</td>
-                    <td className="py-4 px-2 text-sm">{member.expirationDate}</td>
+                    <td className="py-4 px-2 text-sm">{member.join_date}</td>
+                    <td className="py-4 px-2 text-sm">{member.expiration_date}</td>
                     <td className="py-4 px-2">
-                      <span className={`text-sm font-medium ${member.daysRemaining <= 30 ? 'text-destructive' : 'text-green-600'}`}>
-                        {member.daysRemaining} days
-                      </span>
+                      {(() => {
+                        const expDate = new Date(member.expiration_date);
+                        const today = new Date();
+                        const daysRemaining = Math.ceil((expDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                        return (
+                          <span className={`text-sm font-medium ${daysRemaining <= 30 ? 'text-destructive' : 'text-green-600'}`}>
+                            {daysRemaining} days
+                          </span>
+                        );
+                      })()}
                     </td>
                     <td className="py-4 px-2">
                       <Badge className={getStatusColor(member.status)}>

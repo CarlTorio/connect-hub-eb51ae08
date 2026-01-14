@@ -11,6 +11,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { z } from "zod";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 const membershipOptions = [{
   id: "green",
   name: "GREEN",
@@ -46,6 +47,7 @@ const formSchema = z.object({
 const Membership = () => {
   const navigate = useNavigate();
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedMembership, setSelectedMembership] = useState("");
   const [formData, setFormData] = useState({
     name: "",
@@ -54,6 +56,13 @@ const Membership = () => {
     message: ""
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const membershipPrices: Record<string, number> = {
+    green: 8888,
+    gold: 18888,
+    platinum: 38888
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const {
       name,
@@ -70,7 +79,8 @@ const Membership = () => {
       }));
     }
   };
-  const handleSubmit = (e: React.FormEvent) => {
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const dataToValidate = {
       ...formData,
@@ -89,8 +99,31 @@ const Membership = () => {
       return;
     }
 
-    // Form is valid - show success
-    setIsSubmitted(true);
+    setIsSubmitting(true);
+    try {
+      const selectedPlan = membershipOptions.find(m => m.id === selectedMembership);
+      const amount = membershipPrices[selectedMembership] || 0;
+
+      const { error } = await supabase.from('membership_applications').insert({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.contact,
+        membership: selectedPlan?.name || selectedMembership,
+        amount: amount,
+        message: formData.message || null,
+        status: 'pending'
+      });
+
+      if (error) throw error;
+
+      toast.success("Application submitted successfully!");
+      setIsSubmitted(true);
+    } catch (error) {
+      console.error('Error submitting application:', error);
+      toast.error("Failed to submit application. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   const selectedPlan = membershipOptions.find(m => m.id === selectedMembership);
   if (isSubmitted) {
@@ -331,8 +364,8 @@ const Membership = () => {
               duration: 0.6,
               delay: 0.4
             }} className="text-center">
-                <Button type="submit" className="gradient-accent text-accent-foreground rounded-full px-10 py-2.5 text-sm font-medium">
-                  Submit Application
+                <Button type="submit" disabled={isSubmitting} className="gradient-accent text-accent-foreground rounded-full px-10 py-2.5 text-sm font-medium disabled:opacity-50">
+                  {isSubmitting ? "Submitting..." : "Submit Application"}
                 </Button>
               </motion.div>
             </form>
