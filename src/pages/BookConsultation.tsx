@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, CheckCircle, Phone, Smartphone, Clock } from "lucide-react";
+import { ArrowLeft, CheckCircle, Phone, Mail, MapPin, Clock, Facebook, Instagram } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -97,28 +97,64 @@ const BookConsultation = () => {
                 Send us your questions or messages by filling out the form. We'll get back to you as soon as possible.
               </p>
 
-              {/* Contact Details */}
-              <div className="mb-6">
-                <h3 className="text-foreground font-semibold mb-3">Contact Details</h3>
-                <div className="space-y-2">
+              {/* Contact Information */}
+              <div className="mb-8">
+                <h3 className="text-foreground font-semibold mb-4">Contact Information</h3>
+                <div className="space-y-3">
                   <div className="flex items-center gap-3 text-foreground/80">
-                    <Phone className="w-4 h-4" />
-                    <span>8892-7546 (SKIN)</span>
+                    <div className="w-8 h-8 rounded-full border border-primary flex items-center justify-center">
+                      <Phone className="w-4 h-4 text-primary" />
+                    </div>
+                    <span>0977 334 4200</span>
                   </div>
                   <div className="flex items-center gap-3 text-foreground/80">
-                    <Smartphone className="w-4 h-4" />
-                    <span>0917-526-1254</span>
+                    <div className="w-8 h-8 rounded-full border border-primary flex items-center justify-center">
+                      <Mail className="w-4 h-4 text-primary" />
+                    </div>
+                    <span>cruzskin@gmail.com</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-foreground/80">
+                    <div className="w-8 h-8 rounded-full border border-primary flex items-center justify-center">
+                      <MapPin className="w-4 h-4 text-primary" />
+                    </div>
+                    <span>6014 Mandaue City, Philippines</span>
+                  </div>
+                  <div className="flex items-start gap-3 text-foreground/80">
+                    <div className="w-8 h-8 rounded-full border border-primary flex items-center justify-center flex-shrink-0">
+                      <Clock className="w-4 h-4 text-primary" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span>Mon - Sat: 9:00 AM - 7:00 PM</span>
+                      <span>Sunday: 10:00 AM - 5:00 PM</span>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Opening Hours */}
+              {/* Follow Us */}
               <div>
-                <h3 className="text-foreground font-semibold mb-3">Opening Hours</h3>
-                <div className="flex items-center gap-3 text-foreground/80">
-                  <Clock className="w-4 h-4" />
-                  <span>Mon – Sat – 9:00 AM to 6:00 PM</span>
+                <h3 className="text-foreground font-semibold mb-4">Follow Us</h3>
+                <div className="flex items-center gap-3 mb-3">
+                  <a 
+                    href="https://facebook.com/Hilome" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 rounded-full border border-primary flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors"
+                  >
+                    <Facebook className="w-5 h-5 text-primary hover:text-primary-foreground" />
+                  </a>
+                  <a 
+                    href="https://instagram.com/Hilome" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 rounded-full border border-primary flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors"
+                  >
+                    <Instagram className="w-5 h-5 text-primary hover:text-primary-foreground" />
+                  </a>
                 </div>
+                <p className="text-foreground/60 text-sm">
+                  @Hilomè on Facebook  •  @Hilomè on Instagram
+                </p>
               </div>
             </div>
 
