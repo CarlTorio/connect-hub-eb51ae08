@@ -168,13 +168,15 @@ const ThankYou = () => {
                 className="relative rounded-lg overflow-hidden shadow-elevated"
                 style={{
                   backgroundImage: `url(https://i.imgur.com/7En3vdq.png)`,
-                  backgroundSize: "cover",
+                  backgroundSize: "100% 100%",
                   backgroundPosition: "center",
-                  aspectRatio: "3/4",
+                  backgroundRepeat: "no-repeat",
+                  aspectRatio: "auto",
+                  minHeight: "500px",
                 }}
               >
                 {/* Semi-transparent overlay for better text readability */}
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/30 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/20 to-transparent" />
                 
                 {/* Content */}
                 <div className="relative h-full flex flex-col items-center justify-between p-8 text-center">
