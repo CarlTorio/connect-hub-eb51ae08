@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from '@/hooks/use-toast';
 
 interface MedicalRecord {
   id: number;
@@ -147,6 +148,10 @@ const PatientRecords = () => {
         setPatients(prev => [...prev, newPatient]);
         setSelectedPatient(newPatient);
       }
+      toast({
+        title: "Saved successfully",
+        description: "Patient record has been updated.",
+      });
     }
   };
 
