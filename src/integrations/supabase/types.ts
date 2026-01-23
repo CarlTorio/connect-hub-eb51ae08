@@ -58,6 +58,7 @@ export type Database = {
       }
       patient_records: {
         Row: {
+          amount_paid: number | null
           booking_id: string | null
           contact_number: string
           created_at: string
@@ -66,11 +67,14 @@ export type Database = {
           membership: string
           message: string | null
           name: string
+          payment_method: string | null
+          payment_status: string | null
           preferred_date: string
           preferred_time: string
           updated_at: string
         }
         Insert: {
+          amount_paid?: number | null
           booking_id?: string | null
           contact_number: string
           created_at?: string
@@ -79,11 +83,14 @@ export type Database = {
           membership?: string
           message?: string | null
           name: string
+          payment_method?: string | null
+          payment_status?: string | null
           preferred_date: string
           preferred_time: string
           updated_at?: string
         }
         Update: {
+          amount_paid?: number | null
           booking_id?: string | null
           contact_number?: string
           created_at?: string
@@ -92,6 +99,8 @@ export type Database = {
           membership?: string
           message?: string | null
           name?: string
+          payment_method?: string | null
+          payment_status?: string | null
           preferred_date?: string
           preferred_time?: string
           updated_at?: string
@@ -102,6 +111,62 @@ export type Database = {
             columns: ["booking_id"]
             isOneToOne: false
             referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          description: string | null
+          id: string
+          member_id: string | null
+          payment_method: string
+          payment_status: string
+          stripe_charge_id: string | null
+          stripe_customer_id: string | null
+          stripe_payment_intent_id: string | null
+          transaction_type: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          member_id?: string | null
+          payment_method?: string
+          payment_status?: string
+          stripe_charge_id?: string | null
+          stripe_customer_id?: string | null
+          stripe_payment_intent_id?: string | null
+          transaction_type?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          member_id?: string | null
+          payment_method?: string
+          payment_status?: string
+          stripe_charge_id?: string | null
+          stripe_customer_id?: string | null
+          stripe_payment_intent_id?: string | null
+          transaction_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "patient_records"
             referencedColumns: ["id"]
           },
         ]

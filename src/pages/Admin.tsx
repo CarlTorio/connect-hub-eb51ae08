@@ -23,6 +23,9 @@ const HilomeAdminDashboard = () => {
   const [showBookingHistory, setShowBookingHistory] = useState(false);
   const [showForConfirmation, setShowForConfirmation] = useState(false);
   const [selectedBookingMessage, setSelectedBookingMessage] = useState<{name: string; message: string} | null>(null);
+  const [showTransactionHistory, setShowTransactionHistory] = useState(false);
+  const [selectedMemberTransactions, setSelectedMemberTransactions] = useState<any[]>([]);
+  const [transactionMemberName, setTransactionMemberName] = useState('');
 
   const membershipPrices: Record<string, number> = {
     Green: 8888,
@@ -90,13 +93,55 @@ const HilomeAdminDashboard = () => {
     fetchData();
   }, []);
 
+  // Payment method display helper
+  const getPaymentMethodIcon = (method: string) => {
+    switch (method?.toLowerCase()) {
+      case 'gcash': return <Wallet className="h-4 w-4 text-blue-500" />;
+      case 'card': 
+      case 'stripe': return <CreditCard className="h-4 w-4 text-purple-500" />;
+      case 'bank_transfer': return <DollarSign className="h-4 w-4 text-green-500" />;
+      default: return <DollarSign className="h-4 w-4 text-muted-foreground" />;
+    }
+  };
+
+  const getPaymentMethodLabel = (method: string) => {
+    switch (method?.toLowerCase()) {
+      case 'gcash': return 'GCash';
+      case 'card': return 'Card';
+      case 'stripe': return 'Stripe';
+      case 'bank_transfer': return 'Bank Transfer';
+      case 'cash': return 'Cash';
+      default: return method || 'Cash';
+    }
+  };
+
+  // Fetch transaction history for a member
+  const fetchTransactionHistory = async (memberId: string, memberName: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('transactions')
+        .select('*')
+        .eq('member_id', memberId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      setSelectedMemberTransactions(data || []);
+      setTransactionMemberName(memberName);
+      setShowTransactionHistory(true);
+    } catch (error) {
+      console.error('Error fetching transactions:', error);
+      toast.error('Failed to load transaction history');
+    }
+  };
+
   // Sample data for Members "For Confirmation"
   const pendingMembers = [
-    { id: '1', name: 'Elena Rodriguez', email: 'elena.rod@email.com', phone: '09171112233', membership_type: 'Gold', created_at: '2026-01-20', status: 'pending' },
-    { id: '2', name: 'Mark Anthony Reyes', email: 'mark.reyes@email.com', phone: '09182223344', membership_type: 'Platinum', created_at: '2026-01-21', status: 'pending' },
-    { id: '3', name: 'Patricia Lim', email: 'patricia.lim@email.com', phone: '09193334455', membership_type: 'Green', created_at: '2026-01-22', status: 'pending' },
-    { id: '4', name: 'Roberto Santos', email: 'roberto.s@email.com', phone: '09204445566', membership_type: 'Gold', created_at: '2026-01-22', status: 'pending' },
-    { id: '5', name: 'Angela Cruz', email: 'angela.cruz@email.com', phone: '09215556677', membership_type: 'Green', created_at: '2026-01-23', status: 'pending' },
+    { id: '1', name: 'Elena Rodriguez', email: 'elena.rod@email.com', phone: '09171112233', membership_type: 'Gold', created_at: '2026-01-20', status: 'pending', payment_method: 'gcash', payment_status: 'paid', amount_paid: 19888 },
+    { id: '2', name: 'Mark Anthony Reyes', email: 'mark.reyes@email.com', phone: '09182223344', membership_type: 'Platinum', created_at: '2026-01-21', status: 'pending', payment_method: 'card', payment_status: 'paid', amount_paid: 38888 },
+    { id: '3', name: 'Patricia Lim', email: 'patricia.lim@email.com', phone: '09193334455', membership_type: 'Green', created_at: '2026-01-22', status: 'pending', payment_method: 'cash', payment_status: 'pending', amount_paid: null },
+    { id: '4', name: 'Roberto Santos', email: 'roberto.s@email.com', phone: '09204445566', membership_type: 'Gold', created_at: '2026-01-22', status: 'pending', payment_method: 'bank_transfer', payment_status: 'paid', amount_paid: 19888 },
+    { id: '5', name: 'Angela Cruz', email: 'angela.cruz@email.com', phone: '09215556677', membership_type: 'Green', created_at: '2026-01-23', status: 'pending', payment_method: 'gcash', payment_status: 'paid', amount_paid: 8888 },
   ];
 
   // Sample data for Active Members
@@ -546,8 +591,20 @@ const HilomeAdminDashboard = () => {
                               ₱{(membershipPrices[member.membership_type] || 0).toLocaleString()}
                             </span>
                           </div>
+                          <div className="flex items-center gap-3 mt-2">
+                            <div className="flex items-center gap-1">
+                              {getPaymentMethodIcon(member.payment_method)}
+                              <span className="text-xs font-medium">{getPaymentMethodLabel(member.payment_method)}</span>
+                            </div>
+                            <Badge 
+                              variant="outline" 
+                              className={member.payment_status === 'paid' ? 'bg-green-500/10 text-green-600 border-green-500/30' : 'bg-amber-500/10 text-amber-600 border-amber-500/30'}
+                            >
+                              {member.payment_status === 'paid' ? 'Paid' : 'Pending'}
+                            </Badge>
+                          </div>
                           <p className="text-xs text-muted-foreground mt-1">
-                            Paid: {new Date(member.created_at).toLocaleDateString()}
+                            Date: {new Date(member.created_at).toLocaleDateString()}
                           </p>
                         </div>
                         <div className="flex gap-2">
@@ -783,30 +840,114 @@ const HilomeAdminDashboard = () => {
 
               {/* Payment Section */}
               <div className="col-span-2 border-t border-border pt-4 mt-2">
-                <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
-                  <CreditCard className="h-3 w-3" /> Payment Information
-                </p>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs text-muted-foreground flex items-center gap-1">
+                    <CreditCard className="h-3 w-3" /> Payment Information
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1 h-7 text-xs"
+                    onClick={() => fetchTransactionHistory(selectedMember.id, selectedMember.name)}
+                  >
+                    <History className="h-3 w-3" />
+                    View History
+                  </Button>
+                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-xs text-muted-foreground">Payment Method</p>
-                    <p className="font-medium capitalize">
-                      {selectedMember.payment_method_type || '—'}
-                    </p>
+                    <div className="flex items-center gap-1 mt-1">
+                      {getPaymentMethodIcon(selectedMember.payment_method || selectedMember.payment_method_type)}
+                      <p className="font-medium capitalize">
+                        {getPaymentMethodLabel(selectedMember.payment_method || selectedMember.payment_method_type)}
+                      </p>
+                    </div>
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground">Details</p>
-                    <p className="text-sm">{selectedMember.payment_method_details || '—'}</p>
+                    <p className="text-xs text-muted-foreground">Payment Status</p>
+                    <Badge 
+                      variant="outline" 
+                      className={`mt-1 ${selectedMember.payment_status === 'paid' || selectedMember.payment_status === 'completed' ? 'bg-green-500/10 text-green-600 border-green-500/30' : 'bg-amber-500/10 text-amber-600 border-amber-500/30'}`}
+                    >
+                      {selectedMember.payment_status === 'paid' || selectedMember.payment_status === 'completed' ? 'Paid' : selectedMember.payment_status || 'Pending'}
+                    </Badge>
                   </div>
-                  {selectedMember.stripe_payment_intent_id && (
-                    <div className="col-span-2">
-                      <p className="text-xs text-muted-foreground">Transaction ID</p>
-                      <p className="text-xs font-mono text-muted-foreground">{selectedMember.stripe_payment_intent_id}</p>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Amount Paid</p>
+                    <p className="font-medium">
+                      {selectedMember.amount_paid ? `₱${Number(selectedMember.amount_paid).toLocaleString()}` : '—'}
+                    </p>
+                  </div>
+                  {(selectedMember.stripe_payment_intent_id || selectedMember.stripe_customer_id) && (
+                    <div className="col-span-2 bg-muted/30 rounded-lg p-2">
+                      <p className="text-xs text-muted-foreground mb-1">Stripe Integration (Ready)</p>
+                      {selectedMember.stripe_payment_intent_id && (
+                        <p className="text-xs font-mono text-muted-foreground">Intent: {selectedMember.stripe_payment_intent_id}</p>
+                      )}
+                      {selectedMember.stripe_customer_id && (
+                        <p className="text-xs font-mono text-muted-foreground">Customer: {selectedMember.stripe_customer_id}</p>
+                      )}
                     </div>
                   )}
                 </div>
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Transaction History Dialog */}
+      <Dialog open={showTransactionHistory} onOpenChange={setShowTransactionHistory}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-display text-xl flex items-center gap-2">
+              <History className="h-5 w-5 text-accent" />
+              Transaction History
+            </DialogTitle>
+            <p className="text-sm text-muted-foreground">{transactionMemberName}</p>
+          </DialogHeader>
+          <div className="space-y-3 py-4">
+            {selectedMemberTransactions.length > 0 ? (
+              selectedMemberTransactions.map(tx => (
+                <Card key={tx.id} className="border-border/50">
+                  <CardContent className="p-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        {getPaymentMethodIcon(tx.payment_method)}
+                        <div>
+                          <p className="text-sm font-medium capitalize">{tx.description || tx.transaction_type?.replace('_', ' ')}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(tx.created_at).toLocaleDateString()} at {new Date(tx.created_at).toLocaleTimeString()}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-medium">₱{Number(tx.amount).toLocaleString()}</p>
+                        <Badge 
+                          variant="outline" 
+                          className={`text-xs ${tx.payment_status === 'completed' ? 'bg-green-500/10 text-green-600 border-green-500/30' : tx.payment_status === 'failed' ? 'bg-red-500/10 text-red-600 border-red-500/30' : 'bg-amber-500/10 text-amber-600 border-amber-500/30'}`}
+                        >
+                          {tx.payment_status}
+                        </Badge>
+                      </div>
+                    </div>
+                    {tx.stripe_payment_intent_id && (
+                      <p className="text-xs font-mono text-muted-foreground mt-2 truncate">
+                        Stripe: {tx.stripe_payment_intent_id}
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <div className="text-center py-8">
+                <History className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">No transactions found</p>
+                <p className="text-xs text-muted-foreground mt-1">Transactions will appear here when payments are recorded</p>
+              </div>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </div>
