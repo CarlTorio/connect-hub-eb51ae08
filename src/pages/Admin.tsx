@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Calendar, Users, DollarSign, TrendingUp, Clock, CheckCircle, XCircle, Search, Download, Eye, ArrowLeft, History, Phone, CreditCard, Wallet, Gift, Copy } from 'lucide-react';
+import { Calendar, Users, DollarSign, TrendingUp, Clock, CheckCircle, XCircle, Search, Download, Eye, ArrowLeft, History, Phone, CreditCard, Wallet, Gift, Copy, UserCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,6 +21,7 @@ const HilomeAdminDashboard = () => {
   const [filterStatus, setFilterStatus] = useState('all');
   const [selectedMember, setSelectedMember] = useState<any>(null);
   const [showBookingHistory, setShowBookingHistory] = useState(false);
+  const [showForConfirmation, setShowForConfirmation] = useState(false);
 
   const membershipPrices: Record<string, number> = {
     Green: 8888,
@@ -122,9 +123,11 @@ const HilomeAdminDashboard = () => {
   }, []);
 
   // Compute dashboard data dynamically
-  const totalSales = members.reduce((sum, member) => sum + (membershipPrices[member.membership_type] || 0), 0);
-  const totalMembers = members.length;
-  const pendingApplications = applications.filter(app => app.status === 'pending').length;
+  const activeMembers = members.filter(m => m.status === 'active');
+  const pendingMembers = members.filter(m => m.status === 'pending');
+  const totalSales = activeMembers.reduce((sum, member) => sum + (membershipPrices[member.membership_type] || 0), 0);
+  const totalMembers = activeMembers.length;
+  const pendingConfirmations = pendingMembers.length;
   const activeBookings = bookings.length;
 
   // Compute membership distribution dynamically
@@ -145,49 +148,40 @@ const HilomeAdminDashboard = () => {
     { month: 'Jan', revenue: totalSales },
   ];
 
-  const handleApproveApplication = async (id: string) => {
-    const app = applications.find(a => a.id === id);
-    if (!app) return;
-
+  // Handle confirming a pending member (moves them to active status)
+  const handleConfirmMember = async (id: string) => {
     try {
-      // Create new member
-      const { error: memberError } = await supabase.from('members').insert({
-        name: app.name,
-        email: app.email,
-        phone: app.phone,
-        membership_type: app.membership_type,
-        status: 'active'
-      });
+      const { error } = await supabase.from('members')
+        .update({ status: 'active' })
+        .eq('id', id);
 
-      if (memberError) throw memberError;
+      if (error) throw error;
 
-      // Delete the application
-      const { error: deleteError } = await supabase.from('membership_applications').delete().eq('id', id);
-      if (deleteError) throw deleteError;
-
-      toast.success('Application approved!');
+      toast.success('Member confirmed successfully!');
       fetchData(); // Refresh data
     } catch (error) {
-      console.error('Error approving application:', error);
-      toast.error('Failed to approve application');
+      console.error('Error confirming member:', error);
+      toast.error('Failed to confirm member');
     }
   };
 
-  const handleRejectApplication = async (id: string) => {
+  // Handle rejecting a pending member
+  const handleRejectPendingMember = async (id: string) => {
     try {
-      const { error } = await supabase.from('membership_applications')
+      const { error } = await supabase.from('members')
         .update({ status: 'rejected' })
         .eq('id', id);
 
       if (error) throw error;
 
-      toast.success('Application cancelled');
+      toast.success('Member rejected');
       fetchData(); // Refresh data
     } catch (error) {
-      console.error('Error rejecting application:', error);
-      toast.error('Failed to cancel application');
+      console.error('Error rejecting member:', error);
+      toast.error('Failed to reject member');
     }
   };
+
 
   const getMembershipColor = (membership: string) => {
     switch (membership) {
@@ -242,7 +236,7 @@ const HilomeAdminDashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard icon={DollarSign} title="Total Sales" value={`₱${totalSales.toLocaleString()}`} subtitle="Based on membership payments" gradient="gradient-accent" />
         <StatCard icon={Users} title="Total Members" value={totalMembers} subtitle="Active memberships" gradient="bg-green-600" />
-        <StatCard icon={Clock} title="Pending Applications" value={pendingApplications} subtitle="Awaiting review" gradient="bg-amber-500" />
+        <StatCard icon={Clock} title="For Confirmation" value={pendingConfirmations} subtitle="Awaiting confirmation" gradient="bg-amber-500" />
         <StatCard icon={Calendar} title="Active Bookings" value={activeBookings} subtitle="This week" gradient="bg-sage-600" />
       </div>
 
@@ -408,86 +402,114 @@ const HilomeAdminDashboard = () => {
     </div>
   );
 
-  const renderApplications = () => (
-    <div className="space-y-6">
-      <h2 className="font-display text-2xl font-semibold text-foreground">Membership Applications</h2>
-
-      <div className="grid gap-4">
-        {applications.filter(app => app.status === 'pending').map(app => (
-          <motion.div
-            key={app.id}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-          >
-            <Card className="border-border/50 bg-card/80 backdrop-blur-sm hover:shadow-card transition-all duration-300">
-              <CardContent className="p-6">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="space-y-2">
-                    <h3 className="font-display text-lg font-semibold">{app.name}</h3>
-                    <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                      <span>Email: {app.email}</span>
-                      <span>Phone: {app.phone}</span>
-                      <span>Applied: {new Date(app.created_at).toLocaleDateString()}</span>
-                    </div>
-                    <Badge variant="outline" className={getMembershipColor(app.membership_type)}>
-                      {app.membership_type} - ₱{(membershipPrices[app.membership_type] || 0).toLocaleString()}
-                    </Badge>
-                  </div>
-                  <div className="flex gap-3">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="gap-2"
-                      asChild
-                    >
-                      <a href={`tel:${(app.phone || '').replace(/-/g, '')}`}>
-                        <Phone className="h-4 w-4" />
-                        Call
-                      </a>
-                    </Button>
-                    <Button 
-                      onClick={() => handleApproveApplication(app.id)}
-                      className="gap-2 bg-green-600 hover:bg-green-700"
-                    >
-                      <CheckCircle className="h-4 w-4" />
-                      Approve
-                    </Button>
-                    <Button 
-                      onClick={() => handleRejectApplication(app.id)}
-                      variant="destructive"
-                      className="gap-2"
-                    >
-                      <XCircle className="h-4 w-4" />
-                      Canceled
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
-        
-        {applications.filter(app => app.status === 'pending').length === 0 && (
-          <Card className="border-border/50 bg-card/80">
-            <CardContent className="p-12 text-center">
-              <CheckCircle className="h-12 w-12 mx-auto text-green-500 mb-4" />
-              <p className="text-muted-foreground">No pending applications</p>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-    </div>
-  );
 
   const renderMembers = () => (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <h2 className="font-display text-2xl font-semibold text-foreground">Members Database</h2>
-        <Button variant="outline" className="gap-2">
-          <Download className="h-4 w-4" />
-          Export Members
-        </Button>
+        <div className="flex gap-3">
+          <Button 
+            variant="outline" 
+            className="gap-2 relative"
+            onClick={() => setShowForConfirmation(true)}
+          >
+            <UserCheck className="h-4 w-4" />
+            For Confirmation
+            {pendingConfirmations > 0 && (
+              <span className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-destructive text-white text-xs flex items-center justify-center">
+                {pendingConfirmations}
+              </span>
+            )}
+          </Button>
+          <Button variant="outline" className="gap-2">
+            <Download className="h-4 w-4" />
+            Export Members
+          </Button>
+        </div>
       </div>
+
+      {/* For Confirmation Dialog */}
+      <Dialog open={showForConfirmation} onOpenChange={setShowForConfirmation}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-display text-xl flex items-center gap-2">
+              <UserCheck className="h-5 w-5 text-accent" />
+              For Confirmation ({pendingConfirmations})
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            {pendingMembers.length > 0 ? (
+              pendingMembers.map(member => (
+                <motion.div
+                  key={member.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <Card className="border-border/50 bg-card/80">
+                    <CardContent className="p-4">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="space-y-1">
+                          <h3 className="font-medium">{member.name}</h3>
+                          <p className="text-sm text-muted-foreground">{member.email}</p>
+                          {member.phone && (
+                            <p className="text-xs text-muted-foreground">{member.phone}</p>
+                          )}
+                          <div className="flex items-center gap-2 mt-2">
+                            <Badge variant="outline" className={getMembershipColor(member.membership_type)}>
+                              {member.membership_type}
+                            </Badge>
+                            <span className="text-sm font-medium">
+                              ₱{(membershipPrices[member.membership_type] || 0).toLocaleString()}
+                            </span>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Paid: {new Date(member.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-1"
+                            asChild
+                          >
+                            <a href={`tel:${(member.phone || '').replace(/-/g, '')}`}>
+                              <Phone className="h-4 w-4" />
+                              Call
+                            </a>
+                          </Button>
+                          <Button 
+                            onClick={() => handleConfirmMember(member.id)}
+                            size="sm"
+                            className="gap-1 bg-green-600 hover:bg-green-700"
+                          >
+                            <CheckCircle className="h-4 w-4" />
+                            Confirm
+                          </Button>
+                          <Button 
+                            onClick={() => handleRejectPendingMember(member.id)}
+                            variant="destructive"
+                            size="sm"
+                            className="gap-1"
+                          >
+                            <XCircle className="h-4 w-4" />
+                            Reject
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))
+            ) : (
+              <div className="text-center py-8">
+                <CheckCircle className="h-12 w-12 mx-auto text-green-500 mb-4" />
+                <p className="text-muted-foreground">No pending confirmations</p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Card className="border-border/50 bg-card/80 backdrop-blur-sm">
         <CardContent className="p-6">
@@ -518,7 +540,7 @@ const HilomeAdminDashboard = () => {
                 </tr>
               </thead>
               <tbody>
-                {members.map(member => {
+                {activeMembers.map(member => {
                   const daysLeft = calculateDaysLeft(member.membership_expiry_date);
                   return (
                     <tr key={member.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
@@ -710,7 +732,6 @@ const HilomeAdminDashboard = () => {
     { id: 'dashboard', label: 'Dashboard' },
     { id: 'patient-records', label: 'Patient Records' },
     { id: 'bookings', label: 'Bookings' },
-    { id: 'applications', label: 'Applications', badge: pendingApplications },
     { id: 'members', label: 'Members' },
   ];
 
@@ -742,7 +763,7 @@ const HilomeAdminDashboard = () => {
       {/* Navigation Tabs */}
       <nav className="bg-card border-b border-border">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-5">
+          <div className="grid grid-cols-4">
             {tabs.map((tab, index) => (
               <button
                 key={tab.id}
@@ -756,11 +777,6 @@ const HilomeAdminDashboard = () => {
                 }`}
               >
                 {tab.label}
-                {tab.badge && tab.badge > 0 && (
-                  <span className="absolute top-2 ml-1 h-5 w-5 rounded-full bg-destructive text-white text-xs flex items-center justify-center inline-flex">
-                    {tab.badge}
-                  </span>
-                )}
               </button>
             ))}
           </div>
@@ -772,7 +788,6 @@ const HilomeAdminDashboard = () => {
         {activeTab === 'dashboard' && renderDashboard()}
         {activeTab === 'patient-records' && <PatientRecords />}
         {activeTab === 'bookings' && renderBookings()}
-        {activeTab === 'applications' && renderApplications()}
         {activeTab === 'members' && renderMembers()}
       </main>
     </div>
