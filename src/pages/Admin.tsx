@@ -559,7 +559,7 @@ const HilomeAdminDashboard = () => {
 
       {/* For Confirmation Dialog */}
       <Dialog open={showForConfirmation} onOpenChange={setShowForConfirmation}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-display text-xl flex items-center gap-2">
               <UserCheck className="h-5 w-5 text-accent" />
@@ -618,7 +618,7 @@ const HilomeAdminDashboard = () => {
                             </div>
                           )}
                         </div>
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex gap-2 flex-shrink-0">
                           {/* Receipt button - shows when Stripe receipt available */}
                           {member.stripe_receipt_url && (
                             <Button
