@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Calendar, Users, DollarSign, TrendingUp, Clock, CheckCircle, XCircle, Search, Download, Eye, ArrowLeft, History, Phone, CreditCard, Wallet, Gift, Copy, UserCheck, FileText, MessageSquare, RefreshCw, Receipt, ExternalLink } from 'lucide-react';
+import { Calendar, Users, DollarSign, TrendingUp, Clock, CheckCircle, XCircle, Search, Download, Eye, ArrowLeft, History, Phone, CreditCard, Wallet, Gift, Copy, UserCheck, FileText, MessageSquare, RefreshCw, Receipt, ExternalLink, UserPlus, Banknote } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,6 +26,16 @@ const HilomeAdminDashboard = () => {
   const [showTransactionHistory, setShowTransactionHistory] = useState(false);
   const [selectedMemberTransactions, setSelectedMemberTransactions] = useState<any[]>([]);
   const [transactionMemberName, setTransactionMemberName] = useState('');
+  const [showRegisterMember, setShowRegisterMember] = useState(false);
+  const [registerFormData, setRegisterFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    membership_type: 'Green',
+    payment_method: 'cash',
+    referral_code: ''
+  });
+  const [isRegistering, setIsRegistering] = useState(false);
 
   const membershipPrices: Record<string, number> = {
     Green: 8888,
@@ -104,14 +114,14 @@ const HilomeAdminDashboard = () => {
     }
   };
 
-  const getPaymentMethodLabel = (method: string) => {
+  const getPaymentMethodLabel = (method: string, isWalkIn: boolean = false) => {
     switch (method?.toLowerCase()) {
       case 'gcash': return 'GCash';
       case 'card': return 'Card';
       case 'stripe': return 'Stripe';
       case 'bank_transfer': return 'Bank Transfer';
-      case 'cash': return 'Cash';
-      default: return method || 'Cash';
+      case 'cash': return isWalkIn ? 'Cash' : 'Online Payment';
+      default: return method || 'Online Payment';
     }
   };
 
@@ -532,7 +542,14 @@ const HilomeAdminDashboard = () => {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <h2 className="font-display text-2xl font-semibold text-foreground">Members Database</h2>
-        <div className="flex gap-3">
+        <div className="flex gap-3 flex-wrap">
+          <Button 
+            className="gap-2 bg-accent hover:bg-accent/90"
+            onClick={() => setShowRegisterMember(true)}
+          >
+            <UserPlus className="h-4 w-4" />
+            Register Member
+          </Button>
           <Button variant="outline" className="gap-2" onClick={fetchData}>
             <RefreshCw className="h-4 w-4" />
             Reload
@@ -696,6 +713,212 @@ const HilomeAdminDashboard = () => {
                 <p className="text-muted-foreground">No pending confirmations</p>
               </div>
             )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Register Member Dialog - For Walk-in Clients */}
+      <Dialog open={showRegisterMember} onOpenChange={setShowRegisterMember}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="font-display text-xl flex items-center gap-2">
+              <UserPlus className="h-5 w-5 text-accent" />
+              Register Walk-in Member
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Full Name <span className="text-destructive">*</span></label>
+                <Input
+                  placeholder="Enter full name"
+                  value={registerFormData.name}
+                  onChange={(e) => setRegisterFormData(prev => ({ ...prev, name: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Contact Number <span className="text-destructive">*</span></label>
+                <Input
+                  placeholder="09XX XXX XXXX"
+                  value={registerFormData.phone}
+                  onChange={(e) => setRegisterFormData(prev => ({ ...prev, phone: e.target.value }))}
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Email Address <span className="text-destructive">*</span></label>
+              <Input
+                type="email"
+                placeholder="email@example.com"
+                value={registerFormData.email}
+                onChange={(e) => setRegisterFormData(prev => ({ ...prev, email: e.target.value }))}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Membership Type <span className="text-destructive">*</span></label>
+                <Select 
+                  value={registerFormData.membership_type}
+                  onValueChange={(value) => setRegisterFormData(prev => ({ ...prev, membership_type: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select membership" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Green">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                        Green - ₱8,888
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="Gold">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                        Gold - ₱18,888
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="Platinum">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-slate-400"></span>
+                        Platinum - ₱38,888
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Payment Method <span className="text-destructive">*</span></label>
+                <Select 
+                  value={registerFormData.payment_method}
+                  onValueChange={(value) => setRegisterFormData(prev => ({ ...prev, payment_method: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select payment" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="cash">
+                      <div className="flex items-center gap-2">
+                        <Banknote className="h-4 w-4 text-green-600" />
+                        Cash
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="gcash">
+                      <div className="flex items-center gap-2">
+                        <Wallet className="h-4 w-4 text-blue-500" />
+                        GCash
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="card">
+                      <div className="flex items-center gap-2">
+                        <CreditCard className="h-4 w-4 text-purple-500" />
+                        Card
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="bank_transfer">
+                      <div className="flex items-center gap-2">
+                        <DollarSign className="h-4 w-4 text-green-500" />
+                        Bank Transfer
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium flex items-center gap-1.5">
+                <Gift className="h-3.5 w-3.5 text-accent" />
+                Referral Code <span className="text-muted-foreground">(optional)</span>
+              </label>
+              <Input
+                placeholder="Enter referral code"
+                value={registerFormData.referral_code}
+                onChange={(e) => setRegisterFormData(prev => ({ ...prev, referral_code: e.target.value.toUpperCase() }))}
+                maxLength={10}
+                className="uppercase"
+              />
+            </div>
+
+            {/* Summary */}
+            <div className="bg-muted/50 rounded-lg p-4 space-y-2">
+              <h4 className="font-medium text-sm">Registration Summary</h4>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Membership</span>
+                <Badge variant="outline" className={getMembershipColor(registerFormData.membership_type)}>
+                  {registerFormData.membership_type}
+                </Badge>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Amount</span>
+                <span className="font-semibold">₱{(membershipPrices[registerFormData.membership_type] || 0).toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Payment</span>
+                <div className="flex items-center gap-1">
+                  {registerFormData.payment_method === 'cash' && <Banknote className="h-3.5 w-3.5 text-green-600" />}
+                  {registerFormData.payment_method === 'gcash' && <Wallet className="h-3.5 w-3.5 text-blue-500" />}
+                  {registerFormData.payment_method === 'card' && <CreditCard className="h-3.5 w-3.5 text-purple-500" />}
+                  {registerFormData.payment_method === 'bank_transfer' && <DollarSign className="h-3.5 w-3.5 text-green-500" />}
+                  <span className="font-medium">{getPaymentMethodLabel(registerFormData.payment_method, true)}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <Button 
+                variant="outline" 
+                className="flex-1"
+                onClick={() => {
+                  setShowRegisterMember(false);
+                  setRegisterFormData({
+                    name: '',
+                    email: '',
+                    phone: '',
+                    membership_type: 'Green',
+                    payment_method: 'cash',
+                    referral_code: ''
+                  });
+                }}
+              >
+                Cancel
+              </Button>
+              <Button 
+                className="flex-1 bg-accent hover:bg-accent/90 gap-2"
+                disabled={!registerFormData.name || !registerFormData.email || !registerFormData.phone || isRegistering}
+                onClick={() => {
+                  // Placeholder - will be connected to database once members table is created
+                  setIsRegistering(true);
+                  setTimeout(() => {
+                    toast.success(`${registerFormData.name} registered as ${registerFormData.membership_type} member!`);
+                    setShowRegisterMember(false);
+                    setRegisterFormData({
+                      name: '',
+                      email: '',
+                      phone: '',
+                      membership_type: 'Green',
+                      payment_method: 'cash',
+                      referral_code: ''
+                    });
+                    setIsRegistering(false);
+                  }, 1000);
+                }}
+              >
+                {isRegistering ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 animate-spin" />
+                    Registering...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="h-4 w-4" />
+                    Register Member
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
