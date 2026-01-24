@@ -24,6 +24,8 @@ const HilomeAdminDashboard = () => {
   const [selectedMember, setSelectedMember] = useState<any>(null);
   const [showBookingHistory, setShowBookingHistory] = useState(false);
   const [showForConfirmation, setShowForConfirmation] = useState(false);
+  const [showRejectionHistory, setShowRejectionHistory] = useState(false);
+  const [rejectedMembers, setRejectedMembers] = useState<any[]>([]);
   const [selectedBookingMessage, setSelectedBookingMessage] = useState<{name: string; message: string} | null>(null);
   const [showTransactionHistory, setShowTransactionHistory] = useState(false);
   const [selectedMemberTransactions, setSelectedMemberTransactions] = useState<any[]>([]);
@@ -172,8 +174,25 @@ const HilomeAdminDashboard = () => {
     }
   };
 
+  // Fetch rejected members from database
+  const fetchRejectedMembers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('members')
+        .select('*')
+        .eq('status', 'rejected')
+        .order('updated_at', { ascending: false });
+
+      if (error) throw error;
+      setRejectedMembers(data || []);
+    } catch (error) {
+      console.error('Error fetching rejected members:', error);
+    }
+  };
+
   useEffect(() => {
     fetchPendingMembers();
+    fetchRejectedMembers();
   }, []);
 
   // Use database pending members only (no sample data)
@@ -444,8 +463,9 @@ const HilomeAdminDashboard = () => {
 
       if (error) throw error;
 
-      toast.success(`${member?.name || 'Member'} rejected`);
+      toast.success(`${member?.name || 'Member'} rejected and moved to history`);
       fetchPendingMembers();
+      fetchRejectedMembers();
       fetchMembers();
     } catch (error) {
       console.error('Error rejecting member:', error);
@@ -808,6 +828,19 @@ const HilomeAdminDashboard = () => {
               </span>
             )}
           </Button>
+          <Button 
+            variant="outline" 
+            className="gap-2 relative"
+            onClick={() => { fetchRejectedMembers(); setShowRejectionHistory(true); }}
+          >
+            <History className="h-4 w-4" />
+            Rejection History
+            {rejectedMembers.length > 0 && (
+              <span className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-muted-foreground text-white text-xs flex items-center justify-center">
+                {rejectedMembers.length}
+              </span>
+            )}
+          </Button>
           <Button variant="outline" className="gap-2">
             <Download className="h-4 w-4" />
             Export Members
@@ -964,6 +997,145 @@ const HilomeAdminDashboard = () => {
               <div className="text-center py-8">
                 <CheckCircle className="h-12 w-12 mx-auto text-green-500 mb-4" />
                 <p className="text-muted-foreground">No pending confirmations</p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Rejection History Dialog */}
+      <Dialog open={showRejectionHistory} onOpenChange={setShowRejectionHistory}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader className="flex flex-row items-center justify-between">
+            <DialogTitle className="font-display text-xl flex items-center gap-2">
+              <History className="h-5 w-5 text-muted-foreground" />
+              Rejection History ({rejectedMembers.length})
+            </DialogTitle>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => {
+                fetchRejectedMembers();
+                toast.success("Rejection history updated");
+              }}
+              className="ml-auto mr-8"
+            >
+              <RefreshCw className="h-4 w-4 mr-1" />
+              Reload
+            </Button>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            {rejectedMembers.length > 0 ? (
+              rejectedMembers.map(member => (
+                <motion.div
+                  key={member.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <Card className="border-border/50 bg-card/80 opacity-75">
+                    <CardContent className="p-4">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-medium">{member.name}</h3>
+                            <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/30">
+                              Rejected
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground">{member.email}</p>
+                          {member.phone && (
+                            <p className="text-xs text-muted-foreground">{member.phone}</p>
+                          )}
+                          <div className="flex items-center gap-2 mt-2">
+                            <Badge variant="outline" className={getMembershipColor(member.membership_type)}>
+                              {member.membership_type}
+                            </Badge>
+                            <span className="text-sm font-medium">
+                              ₱{(membershipPrices[member.membership_type] || 0).toLocaleString()}
+                            </span>
+                          </div>
+                          {member.payment_method && (
+                            <div className="flex items-center gap-3 mt-2">
+                              <div className="flex items-center gap-1">
+                                {getPaymentMethodIcon(member.payment_method)}
+                                <span className="text-xs font-medium">{getPaymentMethodLabel(member.payment_method)}</span>
+                              </div>
+                            </div>
+                          )}
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Applied: {new Date(member.created_at).toLocaleDateString()}
+                          </p>
+                          <p className="text-xs text-destructive/80 mt-1">
+                            Rejected: {new Date(member.updated_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="flex gap-2 flex-shrink-0">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-1"
+                            onClick={async () => {
+                              try {
+                                const expiryDate = new Date();
+                                expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+                                
+                                const { error } = await supabase
+                                  .from('members')
+                                  .update({ 
+                                    status: 'active',
+                                    membership_start_date: new Date().toISOString(),
+                                    membership_expiry_date: expiryDate.toISOString()
+                                  })
+                                  .eq('id', member.id);
+
+                                if (error) throw error;
+
+                                toast.success(`${member.name} has been restored as active member!`);
+                                fetchRejectedMembers();
+                                fetchMembers();
+                              } catch (error) {
+                                console.error('Error restoring member:', error);
+                                toast.error('Failed to restore member');
+                              }
+                            }}
+                          >
+                            <CheckCircle className="h-4 w-4" />
+                            Restore
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            className="gap-1"
+                            onClick={async () => {
+                              try {
+                                const { error } = await supabase
+                                  .from('members')
+                                  .delete()
+                                  .eq('id', member.id);
+
+                                if (error) throw error;
+
+                                toast.success(`${member.name} permanently deleted`);
+                                fetchRejectedMembers();
+                              } catch (error) {
+                                console.error('Error deleting member:', error);
+                                toast.error('Failed to delete member');
+                              }
+                            }}
+                          >
+                            <XCircle className="h-4 w-4" />
+                            Delete
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))
+            ) : (
+              <div className="text-center py-8">
+                <History className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">No rejected members in history</p>
               </div>
             )}
           </div>
