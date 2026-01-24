@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import BookingHistory from '@/components/BookingHistory';
 import PatientRecords from '@/components/PatientRecords';
+import AddBookingDialog from '@/components/AddBookingDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -596,7 +597,8 @@ const HilomeAdminDashboard = () => {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <h2 className="font-display text-2xl font-semibold text-foreground">Bookings Management</h2>
-        <div className="flex gap-3">
+        <div className="flex gap-3 flex-wrap">
+          <AddBookingDialog onBookingAdded={fetchData} />
           <Button variant="outline" className="gap-2" onClick={fetchData}>
             <RefreshCw className="h-4 w-4" />
             Reload
