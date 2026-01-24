@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import type { Json } from '@/integrations/supabase/types';
+import AddPatientDialog from '@/components/AddPatientDialog';
 
 interface MedicalRecord {
   id: string;
@@ -584,6 +585,7 @@ const PatientRecords = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <h2 className="font-display text-2xl font-semibold text-foreground">Patient Records</h2>
         <div className="flex gap-3">
+          <AddPatientDialog onPatientAdded={fetchPatients} />
           <Button variant="outline" className="gap-2">
             <Download className="h-4 w-4" />
             Export
