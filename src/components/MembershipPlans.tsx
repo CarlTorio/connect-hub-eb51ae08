@@ -1,6 +1,7 @@
 import { motion, useInView } from "framer-motion";
-import { useRef } from "react";
-import { Check, Sparkles } from "lucide-react";
+import { useRef, useState } from "react";
+import { Check, Sparkles, ChevronDown } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 const membershipTiers = [
   {
@@ -221,7 +222,7 @@ const MembershipPlans = () => {
               )}
               
               {/* Card Image with Float Animation */}
-              <div className="p-3 pb-0 relative">
+              <div className="p-2 md:p-3 pb-0 relative">
                 <motion.div
                   animate={isInView ? floatAnimation : {}}
                   whileHover={{ 
@@ -252,20 +253,42 @@ const MembershipPlans = () => {
               </div>
 
               {/* Tier Info */}
-              <div className="p-3 md:p-4 relative">
+              <div className="p-2 md:p-4 relative">
                 <motion.div 
                   initial={{ opacity: 0 }}
                   animate={isInView ? { opacity: 1 } : {}}
                   transition={{ delay: 0.5 + index * 0.2 }}
-                  className="text-center mb-2"
+                  className="text-center mb-1 md:mb-2"
                 >
-                  <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">
+                  <span className="text-[8px] md:text-[10px] text-muted-foreground uppercase tracking-wider font-medium">
                     {tier.tier}
                   </span>
                 </motion.div>
 
-                {/* Benefits List with Staggered Animation */}
-                <ul className="space-y-1.5">
+                {/* Mobile: Collapsible Benefits */}
+                <div className="md:hidden">
+                  <Collapsible>
+                    <CollapsibleTrigger className="flex items-center justify-between w-full py-1.5 text-[10px] font-medium text-foreground border-t border-border/30">
+                      <span>View Benefits ({tier.benefits.length})</span>
+                      <ChevronDown className="w-3 h-3 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <ul className="space-y-1 pt-1.5">
+                        {tier.benefits.map((benefit, benefitIndex) => (
+                          <li key={benefitIndex} className="flex items-start gap-1">
+                            <Check className="w-2.5 h-2.5 text-accent flex-shrink-0 mt-0.5" />
+                            <span className="text-[9px] text-muted-foreground leading-snug">
+                              {benefit}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </CollapsibleContent>
+                  </Collapsible>
+                </div>
+
+                {/* Desktop: Full Benefits List */}
+                <ul className="hidden md:block space-y-1.5">
                   {tier.benefits.map((benefit, benefitIndex) => (
                     <motion.li 
                       key={benefitIndex} 
