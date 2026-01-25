@@ -13,7 +13,10 @@ const Hero = () => {
       duration: 1.5,
       ease: "easeOut"
     }}>
-        <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/70 to-transparent z-10" />
+        {/* Mobile: darker gradient for readability */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent z-10 md:hidden" />
+        {/* Desktop: original lighter gradient */}
+        <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/70 to-transparent z-10 hidden md:block" />
         <img
           src="https://i.imgur.com/EeiPqJv.jpeg"
           alt="Beautiful women with radiant skin"
