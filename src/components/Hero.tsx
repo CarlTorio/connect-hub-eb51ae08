@@ -50,7 +50,7 @@ const Hero = () => {
         };
         
         requestAnimationFrame(animateFadeIn);
-      }, 1500);
+      }, 2500);
 
       return () => {
         clearTimeout(stage1Timer);
