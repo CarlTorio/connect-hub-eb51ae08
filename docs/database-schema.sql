@@ -3,7 +3,7 @@
 -- Consolidated from supabase/migrations/
 -- Last Updated: 2026-01-25
 -- ===========================================================================
--- Migration History (29 files):
+-- Migration History (31 files):
 -- 1. 20260114155747 - Initial bookings, membership_applications, members tables
 -- 2. 20260114173526 - Recreate with TEXT date columns
 -- 3. 20260122063913 - Simplified schema with public access
@@ -33,6 +33,8 @@
 -- 27. 20260124183905 - Delete policies for anon
 -- 28. 20260124190158 - Final consolidated schema with seed data
 -- 29. 20260125060308 - Schema verification and sync
+-- 30. 20260125104107 - Schema restructure with proper FK order
+-- 31. 20260125104647 - Additional UPDATE and DELETE policies for anon
 -- ===========================================================================
 
 
@@ -143,8 +145,11 @@ CREATE POLICY "Allow select for anon" ON public.bookings
 CREATE POLICY "Allow insert for anon" ON public.bookings
     FOR INSERT TO anon WITH CHECK (true);
 
+CREATE POLICY "Allow update for anon on bookings" ON public.bookings 
+    FOR UPDATE TO anon USING (true) WITH CHECK (true);
+
 CREATE POLICY "Allow delete for anon on bookings" ON public.bookings 
-    FOR DELETE USING (true);
+    FOR DELETE TO anon USING (true);
 
 CREATE POLICY "Allow all for authenticated" ON public.bookings
     FOR ALL TO authenticated USING (true) WITH CHECK (true);
@@ -206,8 +211,11 @@ CREATE POLICY "Allow select for anon" ON public.patient_records
 CREATE POLICY "Allow insert for anon" ON public.patient_records
     FOR INSERT TO anon WITH CHECK (true);
 
+CREATE POLICY "Allow update for anon on patient_records" ON public.patient_records 
+    FOR UPDATE TO anon USING (true) WITH CHECK (true);
+
 CREATE POLICY "Allow delete for anon on patient_records" ON public.patient_records 
-    FOR DELETE USING (true);
+    FOR DELETE TO anon USING (true);
 
 CREATE POLICY "Allow all for authenticated" ON public.patient_records
     FOR ALL TO authenticated USING (true) WITH CHECK (true);
