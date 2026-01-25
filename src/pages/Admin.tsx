@@ -1863,19 +1863,17 @@ const HilomeAdminDashboard = () => {
       </header>
 
       {/* Navigation Tabs */}
-      <nav className="bg-card border-b border-border">
+      <nav className="bg-card border-b border-border relative z-40">
         <div className="container mx-auto px-2 sm:px-4">
-          <div className="flex overflow-x-auto scrollbar-hide -mx-2 sm:mx-0">
-            {tabs.map((tab, index) => (
+          <div className="flex overflow-x-auto scrollbar-hide">
+            {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`py-3 sm:py-4 px-3 sm:px-6 border-b-2 transition-all whitespace-nowrap relative text-center flex-1 min-w-[80px] text-xs sm:text-sm ${
-                  index < tabs.length - 1 ? 'border-r border-border' : ''
-                } ${
+                className={`py-3 sm:py-4 px-4 sm:px-6 border-b-2 transition-all whitespace-nowrap text-xs sm:text-sm ${
                   activeTab === tab.id
-                    ? 'border-b-accent text-accent font-medium'
-                    : 'border-b-transparent text-muted-foreground hover:text-foreground'
+                    ? 'border-b-accent text-accent font-medium bg-accent/5'
+                    : 'border-b-transparent text-muted-foreground hover:text-foreground hover:bg-muted/30'
                 }`}
               >
                 {tab.label}
