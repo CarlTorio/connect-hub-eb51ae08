@@ -1,7 +1,6 @@
-import { motion, useInView } from "framer-motion";
+import { motion, useInView, AnimatePresence } from "framer-motion";
 import { useRef, useState } from "react";
 import { Check, Sparkles, ChevronDown } from "lucide-react";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 const membershipTiers = [
   {
@@ -62,6 +61,71 @@ const membershipTiers = [
     ],
   },
 ];
+
+// Mobile Benefits List with smooth animation
+const MobileBenefitsList = ({ benefits }: { benefits: string[] }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="md:hidden">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center justify-between w-full py-1.5 text-[10px] font-medium text-foreground border-t border-border/30"
+      >
+        <span>View Benefits ({benefits.length})</span>
+        <motion.div
+          animate={{ rotate: isOpen ? 180 : 0 }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
+        >
+          <ChevronDown className="w-3 h-3" />
+        </motion.div>
+      </button>
+      
+      <AnimatePresence initial={false}>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ 
+              height: { duration: 0.4, ease: [0.4, 0, 0.2, 1] },
+              opacity: { duration: 0.3, ease: "easeInOut" }
+            }}
+            className="overflow-hidden"
+          >
+            <motion.ul 
+              className="space-y-1 pt-1.5 pb-1"
+              initial="collapsed"
+              animate="open"
+              exit="collapsed"
+              variants={{
+                open: { transition: { staggerChildren: 0.04, delayChildren: 0.1 } },
+                collapsed: { transition: { staggerChildren: 0.02, staggerDirection: -1 } }
+              }}
+            >
+              {benefits.map((benefit, benefitIndex) => (
+                <motion.li 
+                  key={benefitIndex} 
+                  className="flex items-start gap-1"
+                  variants={{
+                    open: { opacity: 1, y: 0, x: 0 },
+                    collapsed: { opacity: 0, y: -5, x: -10 }
+                  }}
+                  transition={{ duration: 0.25, ease: "easeOut" }}
+                >
+                  <Check className="w-2.5 h-2.5 text-accent flex-shrink-0 mt-0.5" />
+                  <span className="text-[9px] text-muted-foreground leading-snug">
+                    {benefit}
+                  </span>
+                </motion.li>
+              ))}
+            </motion.ul>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
 
 const cardVariants = {
   hidden: { 
@@ -265,48 +329,8 @@ const MembershipPlans = () => {
                   </span>
                 </motion.div>
 
-                {/* Mobile: Collapsible Benefits */}
-                <div className="md:hidden">
-                  <Collapsible>
-                    <CollapsibleTrigger className="flex items-center justify-between w-full py-1.5 text-[10px] font-medium text-foreground border-t border-border/30 group">
-                      <span>View Benefits ({tier.benefits.length})</span>
-                      <motion.div
-                        initial={false}
-                        className="group-data-[state=open]:rotate-180 transition-transform duration-300"
-                      >
-                        <ChevronDown className="w-3 h-3" />
-                      </motion.div>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
-                      <motion.ul 
-                        className="space-y-1 pt-1.5"
-                        initial="collapsed"
-                        animate="open"
-                        variants={{
-                          open: { transition: { staggerChildren: 0.05 } },
-                          collapsed: {}
-                        }}
-                      >
-                        {tier.benefits.map((benefit, benefitIndex) => (
-                          <motion.li 
-                            key={benefitIndex} 
-                            className="flex items-start gap-1"
-                            variants={{
-                              open: { opacity: 1, x: 0 },
-                              collapsed: { opacity: 0, x: -10 }
-                            }}
-                            transition={{ duration: 0.2 }}
-                          >
-                            <Check className="w-2.5 h-2.5 text-accent flex-shrink-0 mt-0.5" />
-                            <span className="text-[9px] text-muted-foreground leading-snug">
-                              {benefit}
-                            </span>
-                          </motion.li>
-                        ))}
-                      </motion.ul>
-                    </CollapsibleContent>
-                  </Collapsible>
-                </div>
+                {/* Mobile: Collapsible Benefits with smooth animation */}
+                <MobileBenefitsList benefits={tier.benefits} />
 
                 {/* Desktop: Full Benefits List */}
                 <ul className="hidden md:block space-y-1.5">
