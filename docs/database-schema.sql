@@ -387,25 +387,36 @@ CREATE TRIGGER update_referral_rewards_updated_at
 
 -- ===========================================================================
 -- FUNCTION: Generate unique referral code
--- Automatically generates a referral code on member insert
+-- Automatically generates a 6-letter referral code from member name
+-- Example: "John Carl Torio" → "JOHNCA"
 -- ===========================================================================
 CREATE OR REPLACE FUNCTION public.generate_referral_code()
 RETURNS TRIGGER AS $$
 DECLARE
   new_code TEXT;
   code_exists BOOLEAN;
+  base_code TEXT;
+  counter INTEGER := 0;
 BEGIN
   IF NEW.referral_code IS NOT NULL THEN
     RETURN NEW;
   END IF;
   
+  -- Get first 6 letters of name (removing spaces and non-alpha chars)
+  base_code := UPPER(LEFT(REGEXP_REPLACE(COALESCE(NEW.name, 'MEMBER'), '[^a-zA-Z]', '', 'g'), 6));
+  
+  -- Pad with X if less than 6 characters
+  base_code := RPAD(base_code, 6, 'X');
+  
+  -- Start with base code, add counter if collision
+  new_code := base_code;
+  
   LOOP
-    -- Generate code: first 4 letters of name + 2 random digits
-    new_code := UPPER(LEFT(REGEXP_REPLACE(COALESCE(NEW.name, 'USER'), '[^a-zA-Z]', '', 'g'), 4));
-    new_code := new_code || LPAD(FLOOR(RANDOM() * 100)::TEXT, 2, '0');
-    
     SELECT EXISTS(SELECT 1 FROM public.members WHERE referral_code = new_code) INTO code_exists;
     EXIT WHEN NOT code_exists;
+    counter := counter + 1;
+    -- If collision, append number (e.g., JOHNCA1, JOHNCA2)
+    new_code := LEFT(base_code, 6 - LENGTH(counter::TEXT)) || counter::TEXT;
   END LOOP;
   
   NEW.referral_code := new_code;
@@ -490,6 +501,50 @@ INSERT INTO public.membership_benefits (membership_type, benefit_name, benefit_t
 
 
 -- ===========================================================================
+-- TABLE 8: ADMIN_SETTINGS
+-- Stores admin configuration including password
+-- ===========================================================================
+CREATE TABLE public.admin_settings (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    setting_key TEXT NOT NULL UNIQUE,
+    setting_value TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Indexes for admin_settings
+CREATE INDEX idx_admin_settings_key ON public.admin_settings(setting_key);
+
+-- RLS for admin_settings
+ALTER TABLE public.admin_settings ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow select for anon on admin_settings" ON public.admin_settings
+    FOR SELECT USING (true);
+
+CREATE POLICY "Allow update for anon on admin_settings" ON public.admin_settings
+    FOR UPDATE USING (true) WITH CHECK (true);
+
+CREATE POLICY "Allow insert for anon on admin_settings" ON public.admin_settings
+    FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Allow all for authenticated on admin_settings" ON public.admin_settings
+    FOR ALL USING (true) WITH CHECK (true);
+
+-- Trigger for admin_settings timestamp
+CREATE TRIGGER update_admin_settings_updated_at
+    BEFORE UPDATE ON public.admin_settings
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at_column();
+
+
+-- ===========================================================================
+-- SEED DATA: Default Admin Password
+-- ===========================================================================
+INSERT INTO public.admin_settings (setting_key, setting_value) VALUES
+    ('admin_password', 'HILOME2026');
+
+
+-- ===========================================================================
 -- RELATIONSHIPS SUMMARY
 -- ===========================================================================
 -- members.referral_code -> unique (for referral tracking)
@@ -501,4 +556,5 @@ INSERT INTO public.membership_benefits (membership_type, benefit_name, benefit_t
 -- member_benefit_claims.member_id -> members.id (link claim to member)
 -- member_benefit_claims.benefit_id -> membership_benefits.id (link claim to benefit)
 -- referral_rewards.member_id -> members.id (link reward to member)
+-- admin_settings.setting_key -> unique (admin configuration)
 -- ===========================================================================

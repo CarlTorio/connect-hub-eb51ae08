@@ -596,11 +596,12 @@ const HilomeAdminDashboard = () => {
     }
   };
 
-  // Generate a unique referral code
-  const generateReferralCode = (name: string) => {
-    const prefix = name.substring(0, 3).toUpperCase().replace(/[^A-Z]/g, 'X');
-    const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
-    return `${prefix}${randomPart}`;
+  // Generate a unique referral code - first 6 letters of name (e.g., "John Carl Torio" → "JOHNCA")
+  const generateReferralCode = (name: string): string => {
+    // Remove spaces and non-alpha characters, take first 6, uppercase
+    const cleanName = name.replace(/[^a-zA-Z]/g, '').toUpperCase();
+    const baseCode = cleanName.substring(0, 6).padEnd(6, 'X');
+    return baseCode;
   };
 
   const StatCard = ({ icon: Icon, title, value, subtitle, gradient }: any) => (
