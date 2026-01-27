@@ -221,6 +221,30 @@ const Membership = () => {
                 </div>
               </motion.div>
 
+              {/* Referral Code Card */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.5 }}
+                className="bg-gradient-to-br from-accent/10 to-accent/5 rounded-xl p-6 shadow-lg border border-accent/20 text-center mb-8 max-w-md mx-auto"
+              >
+                <div className="flex items-center justify-center gap-2 mb-3">
+                  <Gift className="w-5 h-5 text-accent" />
+                  <h3 className="font-display text-lg font-semibold text-foreground">Your Referral Code</h3>
+                </div>
+                
+                <div className="bg-card rounded-lg p-4 mb-4 border border-border">
+                  <p className="font-mono text-2xl font-bold text-accent tracking-wider">
+                    {formData.name.replace(/[^a-zA-Z]/g, '').toUpperCase().substring(0, 6).padEnd(6, 'X')}
+                  </p>
+                </div>
+                
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  🎁 <strong>Share this code</strong> with friends and family! When they sign up using your code, 
+                  you'll earn <span className="text-accent font-medium">FREE services and inclusions</span> as referral rewards.
+                </p>
+              </motion.div>
+
               <p className="text-sm text-muted-foreground mb-6">
                 📧 A confirmation email has been sent to <strong>{formData.email}</strong>
               </p>
