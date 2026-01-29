@@ -1,14 +1,18 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const isMobile = useIsMobile();
+  const lastTapRef = useRef<number>(0);
+  const tapTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -52,11 +56,38 @@ const Header = () => {
     }
   };
 
-  const handleLogoClick = () => {
+  const goToHomepage = () => {
     if (location.pathname === "/") {
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
       navigate("/");
+    }
+  };
+
+  const handleLogoClick = () => {
+    if (isMobile) {
+      const now = Date.now();
+      const timeSinceLastTap = now - lastTapRef.current;
+      
+      if (timeSinceLastTap < 300 && timeSinceLastTap > 0) {
+        // Double tap detected - go to admin
+        if (tapTimeoutRef.current) {
+          clearTimeout(tapTimeoutRef.current);
+          tapTimeoutRef.current = null;
+        }
+        lastTapRef.current = 0;
+        navigate('/admin');
+      } else {
+        // First tap - wait to see if second tap comes
+        lastTapRef.current = now;
+        tapTimeoutRef.current = setTimeout(() => {
+          goToHomepage();
+          lastTapRef.current = 0;
+        }, 300);
+      }
+    } else {
+      // Desktop: single click goes to homepage
+      goToHomepage();
     }
   };
 
@@ -76,7 +107,6 @@ const Header = () => {
             {/* Logo */}
             <button
               onClick={handleLogoClick}
-              onDoubleClick={() => navigate('/admin')}
               className="flex items-center ml-2 md:ml-24 touch-manipulation cursor-pointer active:scale-95 transition-transform"
             >
               <img
