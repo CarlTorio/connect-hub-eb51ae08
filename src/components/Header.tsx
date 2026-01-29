@@ -65,29 +65,24 @@ const Header = () => {
   };
 
   const handleLogoClick = () => {
-    if (isMobile) {
-      const now = Date.now();
-      const timeSinceLastTap = now - lastTapRef.current;
-      
-      if (timeSinceLastTap < 300 && timeSinceLastTap > 0) {
-        // Double tap detected - go to admin
-        if (tapTimeoutRef.current) {
-          clearTimeout(tapTimeoutRef.current);
-          tapTimeoutRef.current = null;
-        }
-        lastTapRef.current = 0;
-        navigate('/admin');
-      } else {
-        // First tap - wait to see if second tap comes
-        lastTapRef.current = now;
-        tapTimeoutRef.current = setTimeout(() => {
-          goToHomepage();
-          lastTapRef.current = 0;
-        }, 300);
+    const now = Date.now();
+    const timeSinceLastTap = now - lastTapRef.current;
+    
+    if (timeSinceLastTap < 300 && timeSinceLastTap > 0) {
+      // Double tap/click detected - go to admin
+      if (tapTimeoutRef.current) {
+        clearTimeout(tapTimeoutRef.current);
+        tapTimeoutRef.current = null;
       }
+      lastTapRef.current = 0;
+      navigate('/admin');
     } else {
-      // Desktop: single click goes to homepage
-      goToHomepage();
+      // First tap/click - wait to see if second comes
+      lastTapRef.current = now;
+      tapTimeoutRef.current = setTimeout(() => {
+        goToHomepage();
+        lastTapRef.current = 0;
+      }, 300);
     }
   };
 
